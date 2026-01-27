@@ -1,2 +1,2 @@
 # aerobeat-assembly-community
-Builds the AeroBeat-Community edition executable for the Client or Server
+Combines multiple dependencies to build the AeroBeat Community executable for the Client or Server
