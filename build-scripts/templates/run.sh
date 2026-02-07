@@ -1,87 +1,277 @@
 #!/bin/bash
-# AeroBeat Linux Launcher
-# Usage: ./run.sh
+# run.sh - Launcher script for AeroBeat Linux bundle
+#
+# This script:
+#   - Sets up PYTHONPATH for bundled Python
+#   - Checks for camera devices
+#   - Starts Python sidecar (MediaPipe server)
+#   - Launches Godot game
+#   - Cleans up sidecar on exit
+#
+# Usage: ./run.sh [options]
+#   --mock          Use mock server instead of real MediaPipe
+#   --camera N      Use camera device N (default: 0)
+#   --no-camera     Skip camera check (not recommended)
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GAME_EXE="${SCRIPT_DIR}/aerobeat"
-SIDECAR_DIR="${SCRIPT_DIR}/sidecar"
-PYTHON_DIR="${SIDECAR_DIR}/python"
-PYTHON_EXE="${PYTHON_DIR}/bin/python3"
-SERVER_SCRIPT="${SIDECAR_DIR}/mediapipe_server/main.py"
-
-# Colors
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
+# Colors for status messages
 RED='\033[0;31m'
-NC='\033[0m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+BOLD='\033[1m'
 
-log() { echo -e "${BLUE}[AeroBeat]${NC} $1"; }
-success() { echo -e "${GREEN}[AeroBeat]${NC} $1"; }
-warn() { echo -e "${YELLOW}[AeroBeat]${NC} $1"; }
-error() { echo -e "${RED}[AeroBeat]${NC} $1"; }
+# Script location
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BUNDLE_DIR="$SCRIPT_DIR"
+
+# Default configuration
+USE_MOCK=false
+CAMERA_ID=0
+SKIP_CAMERA_CHECK=false
+SIDECAR_PID=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --mock)
+            USE_MOCK=true
+            shift
+            ;;
+        --camera)
+            CAMERA_ID="$2"
+            shift 2
+            ;;
+        --no-camera)
+            SKIP_CAMERA_CHECK=true
+            shift
+            ;;
+        --help|-h)
+            echo "AeroBeat Launcher"
+            echo ""
+            echo "Usage: ./run.sh [options]"
+            echo ""
+            echo "Options:"
+            echo "  --mock          Use mock server for testing (no camera needed)"
+            echo "  --camera N      Use camera device N (default: 0)"
+            echo "  --no-camera     Skip camera detection (not recommended)"
+            echo "  --help, -h      Show this help message"
+            echo ""
+            echo "Environment Variables:"
+            echo "  AEROBEAT_CAMERA    Camera device ID (default: 0)"
+            echo "  AEROBEAT_MOCK      Set to 1 to use mock server"
+            echo ""
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Run './run.sh --help' for usage information."
+            exit 1
+            ;;
+    esac
+done
+
+# Check environment variables
+[ -n "$AEROBEAT_CAMERA" ] && CAMERA_ID="$AEROBEAT_CAMERA"
+[ "$AEROBEAT_MOCK" = "1" ] && USE_MOCK=true
+
+# Helper functions for colored output
+status_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+status_ok() {
+    echo -e "${GREEN}[OK]${NC} $1"
+}
+
+status_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+status_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+status_step() {
+    echo -e "${CYAN}➜${NC} ${BOLD}$1${NC}"
+}
 
 # Cleanup function
 cleanup() {
-    if [ -n "${SIDECAR_PID:-}" ]; then
-        log "Stopping sidecar..."
-        kill $SIDECAR_PID 2>/dev/null || true
+    if [ -n "$SIDECAR_PID" ] && kill -0 "$SIDECAR_PID" 2>/dev/null; then
+        status_info "Stopping sidecar (PID: $SIDECAR_PID)..."
+        kill "$SIDECAR_PID" 2>/dev/null || true
+        wait "$SIDECAR_PID" 2>/dev/null || true
     fi
 }
-trap cleanup EXIT
 
-log "Starting AeroBeat..."
+# Set up trap for cleanup on exit
+trap cleanup EXIT INT TERM
 
-# Check for camera
-if ls /dev/video* 1>/dev/null 2>&1; then
-    success "Camera detected"
+# Print banner
+echo -e "${CYAN}"
+echo "    ___                   ____            _   "
+echo "   /   |  _______  ______/ __ )________ _| |_"
+echo "  / /| | / ___/ / / / __  / __/ ___/ _  / __/"
+echo " / ___ |/ /  / /_/ / /_/ / /_/ /  /  __/ /_  "
+echo "/_/  |_/_/   \__, /_____/_____/   \___/\__/  "
+echo "           /____/                            "
+echo -e "${NC}"
+echo -e "${BOLD}Air Drumming Game - Linux Bundle${NC}"
+echo ""
+
+# Step 1: Set up Python environment
+status_step "Setting up Python environment..."
+
+PYTHON_DIR="${BUNDLE_DIR}/sidecar"
+if [ -d "${PYTHON_DIR}/python" ]; then
+    # Set PYTHONPATH to use bundled packages
+    export PYTHONPATH="${PYTHON_DIR}/python:${PYTHON_DIR}/lib/python3.10:${PYTHONPATH:-}"
+    
+    # Find Python executable
+    if [ -f "${PYTHON_DIR}/bin/python3" ]; then
+        PYTHON_EXEC="${PYTHON_DIR}/bin/python3"
+    elif [ -f "${PYTHON_DIR}/bin/python" ]; then
+        PYTHON_EXEC="${PYTHON_DIR}/bin/python"
+    else
+        # Fall back to system python
+        PYTHON_EXEC=$(which python3)
+        status_warn "Using system Python: $PYTHON_EXEC"
+    fi
 else
-    warn "No camera found at /dev/video*"
+    # No bundled Python, use system
+    PYTHON_EXEC=$(which python3)
+    status_warn "No bundled Python found, using system: $PYTHON_EXEC"
 fi
 
-# Verify bundled Python
-if [ ! -f "${PYTHON_EXE}" ]; then
-    error "Bundled Python not found!"
+# Verify Python works
+if ! $PYTHON_EXEC --version &>/dev/null; then
+    status_error "Python is not available. Please install Python 3."
     exit 1
 fi
 
-# Setup Python environment
-export PYTHONHOME="${PYTHON_DIR}"
-export PYTHONPATH="${PYTHON_DIR}/lib/python3.11/site-packages:${PYTHON_DIR}/lib/python3.12/site-packages"
+status_ok "Python ready: $($PYTHON_EXEC --version 2>&1 | cut -d' ' -f2)"
 
-success "Python ready: $(${PYTHON_EXE} --version)"
-
-# Download models if needed
-if [ ! -d "${SIDECAR_DIR}/models" ] || [ -z "$(ls -A ${SIDECAR_DIR}/models 2>/dev/null)" ]; then
-    log "Downloading MediaPipe models..."
-    "${PYTHON_EXE}" "${SIDECAR_DIR}/download_models.py" || warn "Model download failed (will retry on first run)"
+# Step 2: Check for camera devices
+if [ "$SKIP_CAMERA_CHECK" = false ] && [ "$USE_MOCK" = false ]; then
+    status_step "Checking camera devices..."
+    
+    # Check for video devices
+    if [ -d "/dev" ]; then
+        VIDEO_DEVICES=$(ls /dev/video* 2>/dev/null | wc -l)
+        if [ "$VIDEO_DEVICES" -gt 0 ]; then
+            status_ok "Found $VIDEO_DEVICES camera device(s)"
+            # List available cameras
+            for dev in /dev/video*; do
+                if [ -c "$dev" ]; then
+                    echo "       $dev"
+                fi
+            done
+        else
+            status_warn "No camera devices found at /dev/video*"
+            status_warn "You can use --mock flag to run without a camera"
+            echo ""
+            read -p "Continue anyway? [y/N] " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                exit 1
+            fi
+        fi
+    else
+        status_warn "Cannot check for cameras (no /dev directory)"
+    fi
+else
+    if [ "$USE_MOCK" = true ]; then
+        status_info "Using mock server (no camera needed)"
+    else
+        status_warn "Skipping camera check (--no-camera)"
+    fi
 fi
 
-# Start Python sidecar
-if [ -f "${SERVER_SCRIPT}" ]; then
-    log "Starting MediaPipe sidecar..."
-    "${PYTHON_EXE}" "${SERVER_SCRIPT}" &
-    SIDECAR_PID=$!
-    sleep 2
-    
-    if kill -0 $SIDECAR_PID 2>/dev/null; then
-        success "Sidecar running (PID: $SIDECAR_PID)"
+# Step 3: Start Python sidecar
+status_step "Starting MediaPipe sidecar..."
+
+SIDECAR_DIR="${BUNDLE_DIR}/sidecar/mediapipe_server"
+SIDECAR_LOG="${BUNDLE_DIR}/sidecar.log"
+
+if [ "$USE_MOCK" = true ]; then
+    # Use mock server
+    if [ -f "${SIDECAR_DIR}/mock_server.py" ]; then
+        status_info "Starting mock server..."
+        $PYTHON_EXEC "${SIDECAR_DIR}/mock_server.py" > "$SIDECAR_LOG" 2>&1 &
+        SIDECAR_PID=$!
     else
-        error "Failed to start sidecar!"
+        status_error "Mock server not found at ${SIDECAR_DIR}/mock_server.py"
         exit 1
     fi
 else
-    warn "Server script not found at ${SERVER_SCRIPT}"
+    # Use real MediaPipe server
+    if [ -f "${SIDECAR_DIR}/main.py" ]; then
+        status_info "Starting MediaPipe server (camera: $CAMERA_ID)..."
+        $PYTHON_EXEC "${SIDECAR_DIR}/main.py" --camera "$CAMERA_ID" > "$SIDECAR_LOG" 2>&1 &
+        SIDECAR_PID=$!
+    else
+        status_error "MediaPipe server not found at ${SIDECAR_DIR}/main.py"
+        exit 1
+    fi
 fi
 
-# Launch game
-if [ -f "${GAME_EXE}" ]; then
-    log "Launching AeroBeat..."
-    "${GAME_EXE}" "$@"
-else
-    error "Game executable not found at ${GAME_EXE}"
-    error "Run build-linux-bundle.sh first to export the project."
+# Wait for sidecar to start
+sleep 2
+
+# Check if sidecar is running
+if ! kill -0 "$SIDECAR_PID" 2>/dev/null; then
+    status_error "Sidecar failed to start. Check ${SIDECAR_LOG} for details."
+    cat "$SIDECAR_LOG" 2>/dev/null || true
     exit 1
 fi
+
+status_ok "Sidecar running (PID: $SIDECAR_PID)"
+
+# Show recent logs
+if [ -f "$SIDECAR_LOG" ]; then
+    tail -n 3 "$SIDECAR_LOG" | while read line; do
+        echo "       $line"
+    done
+fi
+
+# Step 4: Launch Godot game
+status_step "Starting AeroBeat..."
+echo ""
+
+GAME_EXEC="${BUNDLE_DIR}/AeroBeat.x86_64"
+
+if [ ! -f "$GAME_EXEC" ]; then
+    status_error "Game executable not found: $GAME_EXEC"
+    exit 1
+fi
+
+# Make executable
+chmod +x "$GAME_EXEC"
+
+# Launch the game
+status_info "Launching game... (press Ctrl+C to quit)"
+echo ""
+
+# Run game and capture exit code
+"$GAME_EXEC" "$@"
+GAME_EXIT=$?
+
+echo ""
+
+# Handle exit
+if [ $GAME_EXIT -eq 0 ]; then
+    status_ok "Game exited normally"
+elif [ $GAME_EXIT -eq 130 ]; then
+    status_info "Game interrupted (Ctrl+C)"
+else
+    status_warn "Game exited with code $GAME_EXIT"
+fi
+
+# Cleanup happens automatically via trap
+status_info "Cleaning up..."
+
+exit $GAME_EXIT
