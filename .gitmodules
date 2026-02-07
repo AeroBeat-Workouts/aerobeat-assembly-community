@@ -1,0 +1,9 @@
+[submodule "addons/aerobeat-core"]
+	path = addons/aerobeat-core
+	url = file:///home/derrick/Documents/GitHub/AeroBeat/aerobeat-core
+    branch = main
+
+[submodule "addons/aerobeat-input-mediapipe"]
+	path = addons/aerobeat-input-mediapipe
+	url = file:///home/derrick/Documents/GitHub/AeroBeat/aerobeat-input-mediapipe-python
+    branch = main

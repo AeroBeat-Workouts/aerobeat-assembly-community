@@ -1,0 +1,4 @@
+[gd_resource type="FontFile" format=3]
+
+[resource]
+font_path = "res://assets/fonts/default_font.ttf"

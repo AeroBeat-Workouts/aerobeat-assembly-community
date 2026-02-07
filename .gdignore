@@ -1,0 +1,23 @@
+# Ignore nested addon projects
+addons/aerobeat-input-mediapipe-python/
+
+# Ignore any venv folders anywhere in project
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Ignore all matplotlib/numpy test data that causes warnings
+*.csv
+*.ttf
+*.svg
+*.png
+*.jpg
+*.wav
+*.translation
+
+# Ignore site-packages test directories
+site-packages/
