@@ -34,7 +34,7 @@ func _setup_ui():
 	# Background
 	_background = ColorRect.new()
 	_background.color = _bg_color
-	_background.size = Vector2(270, show_breakdown ? 140 : 50)
+	_background.size = Vector2(270, show_breakdown ? 180 : 50)
 	_background.position = Vector2.ZERO
 	add_child(_background)
 	
@@ -123,6 +123,11 @@ func _update_display():
 	var inference_ms: float = _current_metrics.get("inference_ms", 0.0)
 	var capture_ms: float = _current_metrics.get("capture_ms", 0.0)
 	var serialization_ms: float = _current_metrics.get("serialization_ms", 0.0)
+	var processing_fps: float = _current_metrics.get("processing_fps", 60.0)
+	var skip_frames: int = _current_metrics.get("skip_frames", 1)
+	
+	# Check if interpolation is active
+	var interpolation_active := skip_frames > 1
 	
 	# Update main label with color coding
 	_main_label.text = "Latency: %.1f ms" % total_latency
@@ -139,15 +144,27 @@ func _update_display():
 		var breakdown_text := "Capture:     %.1f ms\n" % capture_ms
 		breakdown_text += "Inference:   %.1f ms\n" % inference_ms
 		breakdown_text += "Network:     %.1f ms\n" % network_latency
-		breakdown_text += "Scene:       %.1f ms" % scene_update_ms
+		breakdown_text += "Scene:       %.1f ms\n" % scene_update_ms
 		
 		if serialization_ms > 0:
-			breakdown_text += "\nSerial:      %.1f ms" % serialization_ms
+			breakdown_text += "Serial:      %.1f ms\n" % serialization_ms
+		
+		# Add frame skipping info
+		if _current_metrics.has("processing_fps"):
+			breakdown_text += "Proc FPS:    %.1f\n" % processing_fps
+		
+		breakdown_text += "Skip:        %dx (1:%d)\n" % [skip_frames, skip_frames]
+		breakdown_text += "Interp:      %s" % ("ON" if interpolation_active else "OFF")
 		
 		if _current_metrics.has("frame_count"):
 			breakdown_text += "\nFrame:       %d" % _current_metrics["frame_count"]
 		
 		_breakdown_label.text = breakdown_text
+	
+	# Adjust background size based on content
+	if _breakdown_label:
+		var lines := _breakdown_label.text.count("\n") + 1
+		_background.size = Vector2(270, 45 + lines * 16)
 
 ## Get current latency metrics
 func get_metrics() -> Dictionary:
