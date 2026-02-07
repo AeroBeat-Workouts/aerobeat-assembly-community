@@ -9,6 +9,11 @@ extends Node
 ## When true, the app runs in simulation mode without requiring a camera
 @export var is_simulation_mode: bool = false
 
+## Show latency display when using MediaPipe
+@export var show_latency_display: bool = true
+
+var _latency_display: LatencyDisplay = null
+
 func _ready() -> void:
     print("AeroBeat Assembly started")
     print("Godot version: ", Engine.get_version_info())
@@ -37,6 +42,10 @@ func _ready() -> void:
                 _enable_simulation_mode("MediaPipe not installed. Run: pip install -r requirements.txt")
                 return
         
+        # Add latency display if enabled
+        if show_latency_display:
+            _add_latency_display()
+        
         # Initialize camera
         var success: bool = input_manager.initialize_camera()
         if not success:
@@ -51,6 +60,17 @@ func _register_input_providers() -> void:
     add_child(mediapipe)
     input_manager.register_provider("mediapipe", mediapipe)
     print("Registered MediaPipe provider")
+
+func _add_latency_display() -> void:
+    """Add the latency display UI"""
+    var latency_scene = load("res://src/latency_display.gd")
+    if latency_scene:
+        _latency_display = latency_scene.new()
+        _latency_display.name = "LatencyDisplay"
+        ui.add_child(_latency_display)
+        print("Latency display added")
+    else:
+        push_warning("Could not load latency_display.gd")
 
 func _on_tracking_started() -> void:
     print("Tracking started")
@@ -90,6 +110,18 @@ func toggle_simulation_mode() -> void:
         var success: bool = input_manager.initialize_camera()
         if not success:
             _enable_simulation_mode("Failed to restart camera")
+
+## Get current latency metrics (if available)
+func get_latency_metrics() -> Dictionary:
+    if _latency_display:
+        return _latency_display.get_metrics()
+    return {}
+
+## Get average latency over history (if available)
+func get_average_latency() -> Dictionary:
+    if _latency_display:
+        return _latency_display.get_average_metrics()
+    return {}
 
 func _exit_tree() -> void:
     input_manager.stop_camera()
