@@ -21,9 +21,14 @@ NC='\033[0m' # No Color
 
 # Configuration
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ADDON_ROOT="$(cd "${PROJECT_ROOT}/../aerobeat-input-mediapipe-python" && pwd)"
+ADDON_ROOT="${PROJECT_ROOT}/addons/aerobeat-input-mediapipe"
 BUILD_DIR="${PROJECT_ROOT}/build"
 DIST_DIR="${PROJECT_ROOT}/dist"
+if [ ! -d "${PROJECT_ROOT}/addons/aerobeat-input-mediapipe" ]; then
+    echo "Error: addons/aerobeat-input-mediapipe is missing. Run godotenv addons install from the repo root first."
+    exit 1
+fi
+
 BUNDLE_NAME="AeroBeat-Windows"
 BUNDLE_DIR="${DIST_DIR}/${BUNDLE_NAME}"
 
@@ -229,7 +234,7 @@ if [ -f "${ADDON_ROOT}/pose_landmarker_lite.task" ]; then
 fi
 
 # Copy requirements.txt
-cp "${ADDON_ROOT}/requirements.txt" "${SERVER_DIR}/"
+cp "${ADDON_ROOT}/python_mediapipe/requirements.txt" "${SERVER_DIR}/"
 
 echo -e "${GREEN}✓ MediaPipe server files copied${NC}"
 

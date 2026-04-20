@@ -7,9 +7,9 @@ var provider
 
 func before_each():
     # This test requires the full setup:
-    # 1. aerobeat-core as submodule in assembly
-    # 2. aerobeat-input-mediapipe as submodule in assembly
-    # 3. Python dependencies installed
+    # 1. addons.jsonc restored into addons/ via godotenv addons install
+    # 2. aerobeat-input-mediapipe-python currently arrives through the compatibility install key addons/aerobeat-input-mediapipe
+    # 3. Python-side runtime dependencies remain a separate concern from the assembly manifest
     
     main = preload("res://scenes/main.tscn").instantiate()
     add_child(main)

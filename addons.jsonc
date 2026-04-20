@@ -1,0 +1,27 @@
+{
+  "$schema": "https://chickensoft.games/schemas/addons.schema.json",
+  "addons": {
+    // Stable foundation for the current assembly runtime.
+    "aerobeat-core": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-core.git",
+      "checkout": "v0.1.0",
+      "subfolder": "/"
+    },
+    // Compatibility alias: the assembly currently loads this addon from
+    // res://addons/aerobeat-input-mediapipe/, but the owning repo still lives at
+    // aerobeat-input-mediapipe-python and remains intentionally deferred from the
+    // broader migration wave. Keep that boundary explicit instead of pretending a
+    // clean released/tagged contract exists already.
+    "aerobeat-input-mediapipe": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-mediapipe-python.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
+    // GUT remains a repo-local validation dependency for the root assembly project.
+    "gut": {
+      "url": "git@github.com:bitwes/Gut.git",
+      "checkout": "main",
+      "subfolder": "/addons/gut"
+    }
+  }
+}

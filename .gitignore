@@ -28,3 +28,8 @@ env/
 build/
 dist/
 *.tmp
+
+# GodotEnv-generated assembly dependencies
+addons/*
+!addons/.editorconfig
+.addons/

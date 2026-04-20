@@ -1,5 +1,5 @@
 # Ignore nested addon projects
-addons/aerobeat-input-mediapipe-python/
+addons/aerobeat-input-mediapipe/
 
 # Ignore any venv folders anywhere in project
 venv/
