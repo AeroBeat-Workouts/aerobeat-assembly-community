@@ -65,14 +65,15 @@ Diagnosis: this is primarily an editor visibility / indexing problem caused by t
 
 **Status:** ✅ Complete
 
-**What We Built:** Completed the investigation pass only. Verified the generated MediaPipe addon is physically present in `addons/aerobeat-input-mediapipe/`, confirmed Godot can directly read and load files from that path, and isolated the visibility failure to scanner/index/class-cache behavior rather than missing files.
+**What We Built:** Completed the investigation pass and recorded the downstream owner-repo fix validation. The investigation correctly isolated the cause to the installed addon root `.gdignore`, and the later owner-repo follow-up proved that diagnosis by removing the broad ignore, reinstalling the addon, and restoring normal Godot scan/class-cache visibility for the mounted MediaPipe payload.
 
-**Reference Check:** `REF-01` matched the intended assembly install path for `aerobeat-input-mediapipe`. `REF-02` and `REF-04` matched the on-disk addon tree, including the root `.gdignore` that is suppressing normal editor indexing. `REF-03` showed the project only has `aerobeat-input-core` and `gut` enabled in `[editor_plugins]`, which is consistent with MediaPipe never becoming a discoverable editor plugin in the current scanned state.
+**Reference Check:** `REF-01` still matches the intended assembly install path for `aerobeat-input-mediapipe`. `REF-02` and `REF-04` now tell the full before/after story truthfully: before the owner-repo fix, the installed addon tree carried a root `.gdignore` and stayed absent from filesystem/global-class caches; after the follow-up refresh from `aerobeat-input-mediapipe-python` commit `ea26670`, the refreshed mounted addon no longer has root `.gdignore` or `python_mediapipe/.gdignore`, `filesystem_cache*` now contains `res://addons/aerobeat-input-mediapipe/`, `.../python_mediapipe/`, and `.../src/` entries, and `global_script_class_cache.cfg` again registers `MediaPipeProvider`, `MediaPipeCameraView`, and `MediaPipeConfig` from the mounted addon path. Hidden-dir scans found no cache entries under `.beads/`, `.github/`, `.plans/`, `.testbed/`, or `.git/`, so the validated consumer state now matches the intended visible/hidden split. `REF-03` remains consistent: the assembly still only enables the real editor plugins under `[editor_plugins]`; MediaPipe is visible/indexed again because the tree is no longer globally ignored, not because it was re-enabled as an editor plugin.
 
 **Commits:**
-- Plan update committed and pushed to `main` with the MediaPipe addon visibility diagnosis.
+- Initial investigation plan update committed and pushed to `main` with the visibility diagnosis.
+- Owner-repo fix consumed by this assembly refresh: `ea26670` in `../aerobeat-input-mediapipe-python` (`Fix addon selective visibility layout`).
 
-**Lessons Learned:** In Godot 4.6, an addon tree can still exist on disk and be directly readable through `FileAccess` / direct `load()` calls while remaining absent from the filesystem dock and global class cache if the installed addon root is covered by `.gdignore`. That produces a misleading “it exists but the editor can’t see it” state that looks like stale cache at first glance but is actually intentional scanner exclusion.
+**Lessons Learned:** In Godot 4.6, an addon tree can still exist on disk and be directly readable through `FileAccess` / direct `load()` calls while remaining absent from the filesystem dock and global class cache if the installed addon root is covered by `.gdignore`. The follow-up also showed the truthful fix pattern: move `.gdignore` down onto only the repo-only folders that should stay hidden, then clear scan caches and re-import to prove `filesystem_cache` and `global_script_class_cache` have repopulated for the intended visible addon surfaces.
 
 ---
 
