@@ -5,7 +5,7 @@
     // res://addons/aerobeat-input-core/.
     "aerobeat-input-core": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-core.git",
-      "checkout": "v0.1.0",
+      "checkout": "v0.1.1",
       "subfolder": "/"
     },
     // Compatibility alias: the assembly currently loads this addon from
