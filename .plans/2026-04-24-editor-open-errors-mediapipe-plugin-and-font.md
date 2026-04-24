@@ -118,7 +118,7 @@ This pass should stay narrow and truthful. We are not reopening broad MediaPipe 
 **Commits:**
 - `9d20254` - Document editor plugin and font root causes
 - `2413271` - Fix editor-open MediaPipe plugin and font errors
-- `2b1932d` - Record final QA/audit evidence for editor-open fixes
+- `d0fcead` - Record final QA/audit evidence for editor-open fixes
 
 **Lessons Learned:** When an addon entrypoint is a runtime adapter rather than an `EditorPlugin`, enabling its `plugin.cfg` under `[editor_plugins]` creates misleading editor-startup failures even if the runtime path itself is valid. Also, stale unreferenced resources can still surface import/editor noise, so missing-file cleanup should verify both live references and orphaned resource files.
 
