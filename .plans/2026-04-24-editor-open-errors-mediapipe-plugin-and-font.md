@@ -93,29 +93,35 @@ This pass should stay narrow and truthful. We are not reopening broad MediaPipe 
 
 **Folders Created/Deleted/Modified:**
 - `.plans/`
+- `.qa-logs/`
 
 **Files Created/Deleted/Modified:**
 - `.plans/2026-04-24-editor-open-errors-mediapipe-plugin-and-font.md`
+- `.qa-logs/task3-editor-open.log`
+- `.qa-logs/task3-import.log`
+- `.qa-logs/task3-audit-notes.txt`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Independent QA/audit rerun passed on the fixed assembly state from commit `2413271` (`Fix editor-open MediaPipe plugin and font errors`) after reviewing the research context from `9d20254` (`Document editor plugin and font root causes`). Exact runtime/plugin wiring still makes sense after removing editor-plugin enablement: `project.godot:31-33` now enables only `res://addons/aerobeat-core/plugin.cfg` and `res://addons/gut/plugin.cfg` under `[editor_plugins]` (`REF-02`), while the MediaPipe addon still truthfully declares `script="src/input_provider.gd"` in `addons/aerobeat-input-mediapipe/plugin.cfg:1-7` and remains consumed as a runtime adapter from `src/main.gd:4,71` plus the integration checks in `tests/integration/test_assembly_integration.gd:3,34` and `tests/integration/test_full_pipeline.gd:4,30` (`REF-03`, `REF-04`). Independent evidence rerun on 2026-04-24: `godot --headless --editor --path . --quit-after 1 --verbose` exited `0` and its plugin initialization section loaded only `res://addons/aerobeat-core/plugin.gd` and `res://addons/gut/gut_plugin.gd`; the log contains no reference to `res://addons/aerobeat-input-mediapipe/src/input_provider.gd` and no `default_font.ttf` error (`.qa-logs/task3-editor-open.log`). `godot --headless --path . --import --quit-after 1 --verbose` also exited `0` with no `res://addons/aerobeat-input-mediapipe/src/input_provider.gd` editor-plugin load attempt and no `default_font.ttf` missing-file error (`.qa-logs/task3-import.log`). The current `assets/fonts/` directory is empty, which matches the fix of deleting the stale broken `assets/fonts/default_font.tres`; the rerun produced no font-path complaints, so the missing-font issue is resolved (`REF-05`). Remaining log noise was judged caveat-level and out of scope for this slice: controller mapping warnings emitted before project init, `Scan thread aborted...` during headless editor shutdown, and `ObjectDB instances leaked at exit` on shutdown. None of those warnings mention MediaPipe plugin misloading or the deleted font resource, so they do not block closure for this bead. Exact audit notes and line-oriented evidence were captured in `.qa-logs/task3-audit-notes.txt`.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** Narrow assembly-side repair for the two editor-open failures Derrick hit: the assembly no longer enables the MediaPipe runtime adapter as an editor plugin, and the stale broken font resource that pointed at missing `res://assets/fonts/default_font.ttf` is gone. Independent QA/audit reruns confirmed the project now opens/imports headlessly without either targeted failure while preserving the intended runtime MediaPipe wiring.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-02` satisfied: `[editor_plugins]` now only enables real editor plugins in `project.godot`. `REF-03` and `REF-04` satisfied: the MediaPipe addon still exposes `script="src/input_provider.gd"`, but it is consumed through runtime preload/instantiation paths rather than editor-plugin enablement. `REF-05` satisfied: no stale tracked font resource remains, `assets/fonts/` is empty, and both audit reruns produced no `default_font.ttf` error. `REF-01` closure check satisfied indirectly by reproducing the previously implicated editor-open path and verifying the popup-causing plugin load path no longer appears in logs.
 
 **Commits:**
-- Pending
+- `9d20254` - Document editor plugin and font root causes
+- `2413271` - Fix editor-open MediaPipe plugin and font errors
+- `2b1932d` - Record final QA/audit evidence for editor-open fixes
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** When an addon entrypoint is a runtime adapter rather than an `EditorPlugin`, enabling its `plugin.cfg` under `[editor_plugins]` creates misleading editor-startup failures even if the runtime path itself is valid. Also, stale unreferenced resources can still surface import/editor noise, so missing-file cleanup should verify both live references and orphaned resource files.
 
 ---
 
-*Completed on Pending*
+*Completed on 2026-04-24*

@@ -1,0 +1,213 @@
+=== project.godot editor_plugins ===
+    28	
+    29	gdscript/warnings/untyped_declaration=1
+    30	
+    31	[editor_plugins]
+    32	
+    33	enabled=PackedStringArray("res://addons/aerobeat-core/plugin.cfg", "res://addons/gut/plugin.cfg")
+    34	
+    35	[input]
+    36	
+
+=== plugin.cfg ===
+     1	[plugin]
+     2	
+     3	name="AeroBeat Input Driver For MediaPipe via Python"
+     4	description="Hardware driver for AeroBeat's MediaPipe support via a Python sidecar."
+     5	author="AeroBeat Workouts"
+     6	version="0.0.1"
+     7	script="src/input_provider.gd"
+
+=== runtime wiring: src/main.gd ===
+     1	extends Node
+     2	## Main entry point for AeroBeat Assembly
+     3	
+     4	const MEDIAPIPE_INPUT_PROVIDER := preload("res://addons/aerobeat-input-mediapipe/src/input_provider.gd")
+     5	
+     6	@onready var input_manager: InputManager = $InputManager
+     7	@onready var ui: CanvasLayer = $UI
+     8	@onready var status_label: Label = $UI/TrackingStatus
+     9	@onready var debug_info: Label = $UI/DebugInfo
+    10	
+    11	## When true, the app runs in simulation mode without requiring a camera
+    12	@export var is_simulation_mode: bool = false
+    13	
+    14	## Show latency display when using MediaPipe
+    15	@export var show_latency_display: bool = true
+    16	
+    17	var _latency_display: LatencyDisplay = null
+    18	var _mediapipe_provider: AeroInputProvider = null
+    19	
+    20	func _ready() -> void:
+    21	    print("AeroBeat Assembly started")
+    22	    print("Godot version: ", Engine.get_version_info())
+    23	    
+    24	    # Connect signals
+    25	    input_manager.started.connect(_on_tracking_started)
+    26	    input_manager.stopped.connect(_on_tracking_stopped)
+    27	    input_manager.failed.connect(_on_tracking_failed)
+    28	    
+    29	    # Register input providers
+    30	    _register_input_providers()
+    31	    
+    32	    if _mediapipe_provider == null:
+    33	        _enable_simulation_mode("MediaPipe provider not available")
+    34	        return
+    35	    
+    36	    print("Initializing MediaPipe addon adapter...")
+    37	    var provider: AeroInputProvider = input_manager.get_active_provider()
+    38	    if provider == null:
+    39	        var provider_started: bool = input_manager.set_active_provider(_mediapipe_provider)
+    40	        if not provider_started:
+    41	            _enable_simulation_mode("Failed to initialize MediaPipe adapter/runtime")
+    42	            return
+    43	        provider = input_manager.get_active_provider()
+    44	    elif provider != _mediapipe_provider:
+    45	        var switched_provider: bool = input_manager.set_active_provider(_mediapipe_provider)
+    46	        if not switched_provider:
+    47	            _enable_simulation_mode("Failed to switch to MediaPipe adapter/runtime")
+    48	            return
+    49	        provider = input_manager.get_active_provider()
+    50	    
+    51	    if provider == null:
+    52	        _enable_simulation_mode("MediaPipe provider was not activated")
+    53	        return
+    54	    
+    55	    # The current public adapter may expose dependency checks, but does not guarantee it.
+    56	    if provider.has_method("check_dependencies"):
+    57	        var deps: Dictionary = provider.check_dependencies()
+    58	        if not deps.python_found:
+    59	            _enable_simulation_mode("Python not found. Install Python 3.8+")
+    60	            return
+    61	        if not deps.mediapipe_installed:
+    62	            _enable_simulation_mode("MediaPipe not installed. Run: pip install -r requirements.txt")
+    63	            return
+    64	    
+    65	    # Add latency display if enabled. The current public adapter does not guarantee
+    66	    # the internal latency metrics surface, so the UI degrades honestly if unavailable.
+    67	    if show_latency_display:
+    68	        _add_latency_display(provider)
+    69	
+    70	func _register_input_providers() -> void:
+    71	    var mediapipe: AeroInputProvider = MEDIAPIPE_INPUT_PROVIDER.new()
+    72	    mediapipe.name = "MediaPipeInputProvider"
+    73	    add_child(mediapipe)
+    74	    
+    75	    if input_manager.register_provider(mediapipe, {}):
+    76	        _mediapipe_provider = mediapipe
+    77	        print("Registered MediaPipe addon adapter")
+    78	    else:
+    79	        push_warning("Failed to register MediaPipe addon adapter")
+    80	
+    81	func _add_latency_display(provider: AeroInputProvider) -> void:
+    82	    """Add the latency display UI"""
+    83	    var latency_script := load("res://src/latency_display.gd")
+    84	    if latency_script:
+    85	        _latency_display = latency_script.new()
+    86	        _latency_display.name = "LatencyDisplay"
+    87	        ui.add_child(_latency_display)
+    88	        _latency_display.set_provider(provider)
+    89	        print("Latency display added")
+    90	    else:
+
+=== tests wiring ===
+     1	extends GutTest
+     2	
+     3	const MEDIAPIPE_INPUT_PROVIDER_PATH := "res://addons/aerobeat-input-mediapipe/src/input_provider.gd"
+     4	
+     5	var main_scene
+     6	
+     7	func before_each():
+     8	    main_scene = preload("res://scenes/main.tscn").instantiate()
+     9	    add_child(main_scene)
+    10	    # Wait for _ready
+    11	    await get_tree().process_frame
+    12	
+    13	func after_each():
+    14	    main_scene.queue_free()
+    15	
+    16	func test_main_scene_instantiates() -> void:
+    17	    assert_not_null(main_scene)
+    18	
+    19	func test_input_manager_exists() -> void:
+    20	    var im = main_scene.get_node_or_null("InputManager")
+    21	    assert_not_null(im)
+    22	    assert_is(im, InputManager)
+    23	
+    24	func test_main_scene_registers_an_active_provider() -> void:
+    25	    var im: InputManager = main_scene.get_node("InputManager")
+    26	    var provider := im.get_active_provider()
+    27	    assert_not_null(provider)
+    28	    assert_is(provider, AeroInputProvider)
+    29	
+    30	func test_active_provider_uses_public_mediapipe_adapter_entrypoint() -> void:
+    31	    var im: InputManager = main_scene.get_node("InputManager")
+    32	    var provider: AeroInputProvider = im.get_active_provider()
+    33	    assert_not_null(provider)
+    34	    assert_eq(provider.get_script().resource_path, MEDIAPIPE_INPUT_PROVIDER_PATH)
+    35	
+    36	func test_core_input_manager_signals_exist() -> void:
+    37	    var im: InputManager = main_scene.get_node("InputManager")
+    38	    assert_has_signal(im, "started")
+    39	    assert_has_signal(im, "stopped")
+    40	    assert_has_signal(im, "failed")
+
+--- test_full_pipeline ---
+     1	extends GutTest
+     2	## End-to-end-ish integration test anchored to the current truthful contract.
+     3	
+     4	const MEDIAPIPE_INPUT_PROVIDER_PATH := "res://addons/aerobeat-input-mediapipe/src/input_provider.gd"
+     5	
+     6	var main
+     7	var im: InputManager
+     8	var provider: AeroInputProvider
+     9	
+    10	func before_each() -> void:
+    11	    # This test requires the full setup:
+    12	    # 1. addons.jsonc restored into addons/ via godotenv addons install
+    13	    # 2. aerobeat-input-mediapipe currently arrives through addons/aerobeat-input-mediapipe
+    14	    # 3. Python-side runtime success remains environment-dependent
+    15	    main = preload("res://scenes/main.tscn").instantiate()
+    16	    add_child(main)
+    17	    im = main.get_node("InputManager")
+    18	    await get_tree().process_frame
+    19	    provider = im.get_active_provider()
+    20	
+    21	func after_each() -> void:
+    22	    main.queue_free()
+    23	
+    24	func test_main_scene_exposes_active_provider() -> void:
+    25	    assert_not_null(provider)
+    26	    assert_is(provider, AeroInputProvider)
+    27	
+    28	func test_active_provider_is_public_addon_adapter() -> void:
+    29	    assert_not_null(provider)
+    30	    assert_eq(provider.get_script().resource_path, MEDIAPIPE_INPUT_PROVIDER_PATH)
+    31	
+    32	func test_public_adapter_exposes_polling_surface() -> void:
+    33	    assert_not_null(provider)
+    34	    assert_not_null(provider.get_left_hand_position())
+    35	    assert_not_null(provider.get_right_hand_position())
+    36	    assert_not_null(provider.get_head_position())
+    37	
+    38	func test_cleanup_on_exit() -> void:
+    39	    main.queue_free()
+    40	    pass
+editor_status=0
+import_status=0
+=== editor plugin/init evidence ===
+34:[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+35:Loading resource: res://addons/aerobeat-core/plugin.gd
+36:Loading resource: res://addons/gut/gut_plugin.gd
+119:Unloading addon: res://addons/aerobeat-core/plugin.cfg
+120:Unloading addon: res://addons/gut/plugin.cfg
+121:WARNING: Scan thread aborted...
+128:WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+\n=== import evidence ===
+34:[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+35:Loading resource: res://addons/aerobeat-core/plugin.gd
+36:Loading resource: res://addons/gut/gut_plugin.gd
+126:[  66% ] [90m[1mloading_editor_layout[22m | Loading plugin window layout...[39m[0m
+130:Unloading addon: res://addons/aerobeat-core/plugin.cfg
+131:Unloading addon: res://addons/gut/plugin.cfg
+137:WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
