@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://main_scene"]
 
 [ext_resource type="Script" path="res://src/main.gd" id="1_main"]
-[ext_resource type="Script" path="res://src/input_manager.gd" id="2_input"]
+[ext_resource type="Script" path="res://addons/aerobeat-core/src/input_manager.gd" id="2_input"]
 
 [sub_resource type="LabelSettings" id="1"]
 font_size = 24

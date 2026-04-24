@@ -1,13 +1,20 @@
 class_name LatencyDisplay
 extends Control
 ## Real-time latency display UI for AeroBeat MediaPipe integration
+##
+## Truthful current scope:
+## - the assembly can receive a public AeroInputProvider adapter from the addon
+## - that adapter does not currently guarantee the old internal latency metrics API
+## - this UI therefore degrades cleanly when metrics are unavailable
 
 @export var update_interval_ms: float = 100.0  # Update every 100ms
 @export var show_breakdown: bool = true
 @export var warning_threshold_ms: float = 60.0
 @export var critical_threshold_ms: float = 100.0
 
-var _provider: MediaPipeProvider
+var _provider: Node = null
+var _provider_supports_latency_metrics: bool = false
+var _provider_supports_average_latency: bool = false
 var _update_timer: float = 0.0
 var _current_metrics: Dictionary = {}
 
@@ -22,19 +29,33 @@ var _color_warning := Color(1.0, 0.8, 0.0, 1.0)  # Yellow
 var _color_critical := Color(1.0, 0.0, 0.0, 1.0)  # Red
 var _bg_color := Color(0.0, 0.0, 0.0, 0.7)
 
-func _ready():
+func _ready() -> void:
 	_setup_ui()
-	_find_provider()
 	
 	# Position in top-right corner
 	anchors_preset = PRESET_TOP_RIGHT
 	position = Vector2(-280, 10)
 
-func _setup_ui():
+func set_provider(provider: Node) -> void:
+	_provider = provider
+	_provider_supports_latency_metrics = provider != null and provider.has_method("get_latency_metrics")
+	_provider_supports_average_latency = provider != null and provider.has_method("get_average_latency")
+	
+	if _provider_supports_latency_metrics and provider.has_signal("_latency_updated"):
+		provider._latency_updated.connect(_on_latency_updated)
+	
+	if _provider_supports_latency_metrics:
+		print("LatencyDisplay: Connected to provider latency metrics surface")
+	else:
+		print("LatencyDisplay: Latency metrics unavailable on current public provider adapter")
+	
+	_update_display()
+
+func _setup_ui() -> void:
 	# Background
 	_background = ColorRect.new()
 	_background.color = _bg_color
-	_background.size = Vector2(270, show_breakdown ? 180 : 50)
+	_background.size = Vector2(270, 180 if show_breakdown else 50)
 	_background.position = Vector2.ZERO
 	add_child(_background)
 	
@@ -68,31 +89,7 @@ func _setup_ui():
 	
 	_update_display()
 
-func _find_provider():
-	# Try to find MediaPipeProvider in the scene
-	var root = get_tree().root
-	_provider = _find_provider_recursive(root)
-	
-	if _provider:
-		# Connect to latency signal
-		if _provider.has_signal("_latency_updated"):
-			_provider._latency_updated.connect(_on_latency_updated)
-		print("LatencyDisplay: Connected to MediaPipeProvider")
-	else:
-		print("LatencyDisplay: MediaPipeProvider not found, will poll for metrics")
-
-func _find_provider_recursive(node: Node) -> MediaPipeProvider:
-	if node is MediaPipeProvider:
-		return node
-	
-	for child in node.get_children():
-		var result := _find_provider_recursive(child)
-		if result:
-			return result
-	
-	return null
-
-func _on_latency_updated(metrics: Dictionary):
+func _on_latency_updated(metrics: Dictionary) -> void:
 	_current_metrics = metrics
 
 func _process(delta: float) -> void:
@@ -101,16 +98,19 @@ func _process(delta: float) -> void:
 	if _update_timer >= update_interval_ms:
 		_update_timer = 0.0
 		
-		# If not connected to signal, poll for metrics
-		if not _provider and _current_metrics.is_empty():
-			_find_provider()
-		
-		if _provider:
+		if _provider_supports_latency_metrics:
 			_current_metrics = _provider.get_latency_metrics()
 		
 		_update_display()
 
-func _update_display():
+func _update_display() -> void:
+	if not _provider_supports_latency_metrics:
+		_main_label.text = "Latency: N/A"
+		if _breakdown_label:
+			_breakdown_label.text = "The current public MediaPipe addon adapter\ndoes not expose latency metrics yet."
+			_background.size = Vector2(270, 77)
+		return
+	
 	if _current_metrics.is_empty():
 		_main_label.text = "Latency: -- ms"
 		if _breakdown_label:
@@ -172,6 +172,6 @@ func get_metrics() -> Dictionary:
 
 ## Get average latency from provider history
 func get_average_metrics() -> Dictionary:
-	if _provider:
+	if _provider_supports_average_latency:
 		return _provider.get_average_latency()
 	return {}
