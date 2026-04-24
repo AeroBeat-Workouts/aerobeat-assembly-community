@@ -124,25 +124,37 @@ Important truthful caveat observed during this pass: the generated addon payload
 **Files Created/Deleted/Modified:**
 - `.plans/2026-04-24-godotenv-addon-tree-out-of-sync.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Independent QA/audit passed. Exact evidence re-verified in a fresh auditor pass:
+
+- Manifest/source truth is correct: `addons.jsonc:4-10` still preserves the compatibility addon key/path `aerobeat-core` while sourcing it from `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git` at `checkout: "v0.1.0"`.
+- Compatibility runtime refs remain intentionally unchanged: `project.godot:33`, `src/input_manager.gd:1,4-5`, and `scenes/main.tscn:4` still load `res://addons/aerobeat-core/...`, and no assembly-side rewrite to `res://addons/aerobeat-input-core/...` was introduced.
+- Fresh GodotEnv reinstall reproduced the expected resolution contract: `godotenv addons install` again reported `Resolved: Addon "aerobeat-core" ... on branch \`v0.1.0\` of \`git@github.com:AeroBeat-Workouts/aerobeat-input-core.git\`` while leaving the installed mount at `addons/aerobeat-core/`.
+- The regenerated addon tree matches the intended dependency set: `addons/` contains `aerobeat-core`, `aerobeat-input-mediapipe`, and `gut`; plugin manifests are present at `addons/aerobeat-core/plugin.cfg`, `addons/aerobeat-input-mediapipe/plugin.cfg`, and `addons/gut/plugin.cfg`.
+- Editor-visible enabled addons match the intended current project dependencies: `project.godot:33` enables only `res://addons/aerobeat-core/plugin.cfg` and `res://addons/gut/plugin.cfg`; `aerobeat-input-mediapipe` is installed but intentionally not enabled as an editor plugin.
+- Headless editor/import verification passed again: `godot --headless --path . --import` exited `0`, initialized plugins successfully, and completed the editor load path without addon resolution failures.
+- Runtime contract parity with the actual current core repo still holds after the reinstall: `cmp -s` matched `addons/aerobeat-core/plugin.gd`, `src/input_manager.gd`, and checked interface files against `../aerobeat-input-core` (`src/interfaces/boxing_input.gd`, `flow_input.gd`, `input_provider.gd`).
+- Remaining old-name branding inside the generated payload is real but not a blocker for this slice: `addons/aerobeat-core/README.md:1` still says `# aerobeat-core` and `addons/aerobeat-core/plugin.cfg:2` still says `name="AeroBeat Core"`. Because the assembly manifest now resolves from the correct repo and the mounted code matches `../aerobeat-input-core`, this is best classified as an upstream package/tag identity caveat, not an assembly wiring failure.
+
+Conclusion: Task 3 evidence supports closure of `oc-g23`.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** The assembly repo now truthfully sources the compatibility-mounted `aerobeat-core` addon from `aerobeat-input-core`, regenerates the expected GodotEnv addon tree, and keeps the project/editor-visible addon set aligned with the current dependency intent.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-01`/`REF-02` satisfied by correcting the stale repo identity while preserving the compatibility mount Derrick said still matters; `REF-03` satisfied by `addons.jsonc:4-10`; `REF-04` satisfied by unchanged intentional runtime refs in `project.godot`, `src/`, and `scenes/`; `REF-05` satisfied by the regenerated `addons/` tree plus successful headless import; `REF-06` satisfied by confirming the rename is real but still consumed through the historical mount path.
 
 **Commits:**
-- Pending
+- `837fd1c` - Document addon naming drift audit
+- `6720a8e` - Point assembly core addon at aerobeat-input-core
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** When repo identities change but consumer mount paths are intentionally preserved, the audit target is the source-of-truth resolution contract, not just the installed folder name. Also, old branding inside a tagged addon payload can be a legitimate upstream identity caveat without being an assembly-side blocker if code parity and runtime/editor wiring are otherwise correct.
 
 ---
 
-*Completed on Pending*
+*Completed on 2026-04-24*
