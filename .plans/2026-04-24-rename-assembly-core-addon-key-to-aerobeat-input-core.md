@@ -171,7 +171,7 @@ The prior upstream branding caveat has now been resolved by the follow-up input-
 **Commits:**
 - `2c72817` - Rename input-core addon mount path
 - `22081e3` - Rename assembly core addon path to aerobeat-input-core
-- `Pending` - Plan update with independent Task 4 audit evidence
+- `0974ac0` - Refresh input core pin to v0.1.2
 
 **Lessons Learned:** When a GodotEnv addon-key rename crosses repo boundaries, the real blocker is usually not the manifest edit but stale generated payloads and addon-internal hardcoded paths. Purging generated mounts/caches and then auditing the refreshed payload directly is what turns the rename from “looks right in source” into “is actually true at runtime.” Remaining dependency README branding drift should be tracked separately, but it is not a valid reason to block this rename slice once live imports and runtime wiring are clean.
 
