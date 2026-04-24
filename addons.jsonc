@@ -1,9 +1,11 @@
 {
   "$schema": "https://chickensoft.games/schemas/addons.schema.json",
   "addons": {
-    // Stable foundation for the current assembly runtime.
+    // Compatibility mount: the assembly still loads this package from
+    // res://addons/aerobeat-core/, but the real source repo is now
+    // aerobeat-input-core.
     "aerobeat-core": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-core.git",
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-core.git",
       "checkout": "v0.1.0",
       "subfolder": "/"
     },

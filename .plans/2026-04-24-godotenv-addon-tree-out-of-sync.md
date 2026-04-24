@@ -1,7 +1,7 @@
 # AeroBeat Assembly GodotEnv Addon Tree Out-of-Sync
 
 **Date:** 2026-04-24  
-**Status:** Draft  
+**Status:** In Progress  
 **Agent:** Pico 🐱‍🏍
 
 ---
@@ -85,12 +85,28 @@ Do **not** rename project paths to `res://addons/aerobeat-input-core/...` in thi
 - `.plans/`
 
 **Files Created/Deleted/Modified:**
-- manifest/config/runtime/test files as needed
+- `addons.jsonc`
+- `README.md`
+- `src/input_manager.gd`
 - `.plans/2026-04-24-godotenv-addon-tree-out-of-sync.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Implemented the smallest truthful assembly-side fix without breaking the compatibility mount. Exact changes:
+
+- `addons.jsonc:4-10` now keeps the addon key/path `aerobeat-core` but changes its source URL to `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git` at `checkout: "v0.1.0"`.
+- `README.md:12-15,77-78` now states the truth explicitly: the assembly depends on `aerobeat-input-core` but still installs it under the compatibility addon key/path `aerobeat-core` so current runtime references remain valid.
+- `src/input_manager.gd:4-7` now documents the same compatibility-alias reality for the local forwarding shim.
+
+Validation/evidence captured during implementation:
+
+- Fresh restore succeeded after removing the stale generated mount: `rm -rf addons/aerobeat-core .addons/aerobeat-core && godotenv addons install`.
+- GodotEnv resolution output explicitly showed the new source identity while preserving the old mount key: `Resolved: Addon "aerobeat-core" ... on branch \`v0.1.0\` of \`git@github.com:AeroBeat-Workouts/aerobeat-input-core.git\``.
+- Compatibility project paths remain intact and coherent: `project.godot:33`, `src/input_manager.gd:1`, and `scenes/main.tscn:4` still reference `res://addons/aerobeat-core/...`.
+- Runtime contract parity still holds after the resync: `cmp -s` matched `addons/aerobeat-core/plugin.gd`, `src/input_manager.gd`, and every checked `src/interfaces/*.gd` file against the sibling `../aerobeat-input-core` repo.
+- Headless import smoke check passed: `godot --headless --path . --import` exited `0` after registering the expected input classes (`BoxingInput`, `FlowInput`, `AeroInputProvider`, `InputManager`).
+
+Important truthful caveat observed during this pass: the generated addon payload under `addons/aerobeat-core/README.md` and `addons/aerobeat-core/plugin.cfg` still contains old-name upstream branding (`aerobeat-core` / `AeroBeat Core`) even though GodotEnv now resolves the package from the `aerobeat-input-core` repo URL. That appears to be an upstream package/tag identity issue, not an assembly wiring issue, and should be treated as a QA note rather than silently rewritten here.
 
 ---
 
