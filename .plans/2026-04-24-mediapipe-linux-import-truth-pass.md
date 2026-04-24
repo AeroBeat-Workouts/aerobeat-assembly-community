@@ -1,7 +1,7 @@
 # AeroBeat Assembly Community MediaPipe Linux Import Truth Pass
 
 **Date:** 2026-04-24  
-**Status:** Draft  
+**Status:** Complete  
 **Agent:** Pico 🐱‍🏍
 
 ---
@@ -115,25 +115,28 @@ This pass needs to replace assumption with evidence. First reproduce the current
 **Files Created/Deleted/Modified:**
 - `.plans/2026-04-24-mediapipe-linux-import-truth-pass.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Independent audit reran the evidence path instead of trusting the prior task notes. Commit provenance checked first: `git show --stat --oneline --summary a5a7472`, `226d9a7`, and `0ffc2c4` confirmed the implementation commit landed the assembly/runtime rewiring and the later commits only updated the plan. Root import path truth check passed independently: after `godotenv addons install`, `godot --headless --path . --script src/main.gd --check-only` exited cleanly, and `godot --headless --path . --import --quit-after 1 --verbose` loaded `res://scenes/main.tscn`, `res://src/main.gd`, and the enabled plugins from `project.godot` without reproducing the Task 1 parse blockers; remaining output was non-blocking editor/plugin noise plus an editor-exit leak warning, not root-project parse failure. Addon wiring truth check passed independently: `addons.jsonc` mounts the Python repo under the assembly alias `aerobeat-input-mediapipe`; `project.godot` enables `res://addons/aerobeat-input-mediapipe/plugin.cfg`; `scenes/main.tscn` points the `InputManager` node at `res://addons/aerobeat-core/src/input_manager.gd`; `src/main.gd` preloads `res://addons/aerobeat-input-mediapipe/src/input_provider.gd`; and the addon files exist exactly at `addons/aerobeat-input-mediapipe/plugin.cfg`, `.../src/input_provider.gd`, and `.../src/providers/mediapipe_provider.gd` (`REF-02`, `REF-03`, `REF-04`, `REF-05`). Best truthful runtime/use path also passed independently: `godot --headless --path . --quit-after 2 --verbose` printed `AeroBeat Assembly started`, loaded `res://addons/aerobeat-input-mediapipe/src/providers/mediapipe_provider.gd`, logged `Registered MediaPipe addon adapter`, `Initializing MediaPipe addon adapter...`, `Tracking started`, and `Latency display added`, then shut down cleanly with exit code 0. Remaining caveat truth-check: the exact QA-reported error reproduced verbatim — `ERROR: Node not found: "MediaPipeServer" (relative to "/root/Main/MediaPipeInputProvider/MediaPipeProvider")` from `res://addons/aerobeat-input-mediapipe/src/providers/mediapipe_provider.gd:13` — and direct file inspection explains it: the addon still declares `@onready var _server = $MediaPipeServer` at line 13, then only conditionally creates that child later inside `_ready()` lines 38-42. Despite that startup-order flaw, the provider recovers immediately by loading `src/server/mediapipe_server.gd`, binding UDP on `127.0.0.1:4242`, and continuing through assembly startup/shutdown. Auditor verdict: this plan slice is complete with a non-blocking addon-internal caveat, not blocked by another root assembly import/use mismatch. The slice should close because the scoped goal was truthful Linux assembly import/use, which now passes; the startup-order bug should be tracked as follow-on addon cleanup work rather than holding this assembly truth-pass bead open.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** The assembly repo now truthfully supports the Linux MediaPipe addon import/use slice: the root project imports cleanly, the assembly mounts and enables the addon under the actual `res://addons/aerobeat-input-mediapipe/` path, the main scene uses the core `InputManager` plus the addon’s public adapter entrypoint, and the best available headless runtime path reaches provider registration/startup instead of failing at parse time.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-02` satisfied: the manifest alias and installed addon directory match the live assembly import path. `REF-03` satisfied: `project.godot` enables the mounted addon plugin and points the project at `res://scenes/main.tscn`. `REF-04` satisfied: `src/main.gd`, `src/input_manager.gd`, and `scenes/main.tscn` now align with the current core/addon contract instead of the stale local API assumptions from Task 1. `REF-05` satisfied with caveat: the assembly correctly uses the addon’s public adapter/runtime surface, but the addon still contains documentation drift in the adapter comment (`aerobeat-input-mediapipe-python` path mention) and a startup-order bug in `src/providers/mediapipe_provider.gd` that emits a recoverable `MediaPipeServer` missing-child error before self-healing. `REF-01` satisfied: this work completed the recommended first truthful assembly import/use slice. `REF-06` superseded: the prior state of assembly import failure is no longer true after the landed fixes and rerun validation.
 
 **Commits:**
-- Pending
+- `a5a7472` - Repair Linux MediaPipe assembly import path
+- `226d9a7` - Sync MediaPipe truth-pass plan results
+- `0ffc2c4` - Record QA evidence for Linux MediaPipe truth pass
+- `ac8dff2` - Audit MediaPipe Linux truth-pass closure
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** For cross-repo Godot addon truth passes, import success and runtime truth are different checks: file-path mounting, enabled plugin state, and live scene wiring all need independent verification. Also, a recoverable addon-internal error can be real without invalidating a narrower assembly-slice claim; the right move is to record it precisely and spin follow-on cleanup instead of overreporting either “fully clean” or “still blocked.”
 
 ---
 
-*Completed on Pending*
+*Completed on 2026-04-24*
