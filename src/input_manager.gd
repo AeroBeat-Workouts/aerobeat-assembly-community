@@ -1,7 +1,7 @@
-extends "res://addons/aerobeat-core/src/input_manager.gd"
-## Deprecated assembly-local compatibility shim.
+extends "res://addons/aerobeat-input-core/src/input_manager.gd"
+## Deprecated assembly-local forwarding shim.
 ##
-## The real InputManager contract now lives in aerobeat-input-core, mounted here
-## under the compatibility addon path `res://addons/aerobeat-core/`. This file
-## remains only as a non-global forwarding script so stale local paths stop
-## shadowing the core global class during import.
+## The real InputManager contract now lives at
+## `res://addons/aerobeat-input-core/`. This file remains only as a non-global
+## forwarding script so stale local paths stop shadowing the core global class
+## during import.

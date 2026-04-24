@@ -1,0 +1,13 @@
+### installed addons
+aerobeat-input-core
+aerobeat-input-mediapipe
+gut
+### cached addons
+aerobeat-input-core
+aerobeat-input-mediapipe
+gut
+### mediapipe input provider new core path
+1:extends "res://addons/aerobeat-input-core/src/interfaces/input_provider.gd"
+### stale core alias absent
+OK addons/aerobeat-core absent
+OK .addons/aerobeat-core absent

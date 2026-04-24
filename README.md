@@ -10,7 +10,7 @@ An **Assembly** is the top-level Godot project that composes released or in-flig
 *   **License:** **GNU GPLv3** (Strict Copyleft)
 *   **Primary dependency contract:** `addons.jsonc` at repo root
 *   **Current concrete dependencies:**
-    *   `aerobeat-input-core` pinned at `v0.1.0`, installed under the compatibility addon key/path `aerobeat-core`
+    *   `aerobeat-input-core` pinned at `v0.1.0`, installed at addon key/path `aerobeat-input-core`
     *   `aerobeat-input-mediapipe-python` via the temporary installed-addon compatibility path `addons/aerobeat-input-mediapipe`
     *   `gut` (Repo-local test dependency)
 
@@ -74,8 +74,8 @@ This is deliberate and temporary, not hidden debt.
 ## Validation notes
 
 - `addons.jsonc` is the committed assembly dependency contract.
-- The assembly still mounts its input foundation at `res://addons/aerobeat-core/` for compatibility with current project/runtime paths.
-- That compatibility mount now sources `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git` pinned to `v0.1.0`.
+- The assembly now mounts its input foundation at `res://addons/aerobeat-input-core/`.
+- That addon path is sourced from `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git` pinned to `v0.1.0`.
 - `aerobeat-input-mediapipe-python` remains intentionally deferred and is consumed here through the compatibility install key `aerobeat-input-mediapipe` on `main` until its dedicated migration/release work exists.
 - `addons/` is a generated install target and must not be committed.
 - Repo-local tests live under `test/` and run against the root assembly project.

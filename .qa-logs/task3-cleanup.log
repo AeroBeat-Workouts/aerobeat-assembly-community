@@ -1,0 +1,17 @@
+### pre-clean tree
+aerobeat-core
+aerobeat-input-mediapipe
+gut
+### pre-clean cache
+aerobeat-core
+aerobeat-input-mediapipe
+gut
+### removing stale old alias mounts if present
+REMOVE addons/aerobeat-core -> /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-core
+REMOVE .addons/aerobeat-core -> /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/.addons/aerobeat-core
+### post-clean tree
+aerobeat-input-mediapipe
+gut
+### post-clean cache
+aerobeat-input-mediapipe
+gut
