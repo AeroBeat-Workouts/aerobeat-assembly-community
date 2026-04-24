@@ -62,7 +62,7 @@ This pass is not about blindly fixing everything at once. It is about reproducin
 **Reference Check:** `REF-01` satisfied by direct validation of the current `project.godot`, `scenes/main.tscn`, and `src/main.gd` wiring against live runs; the observed runtime behavior matched the current main scene and adapter preload path. `REF-02` satisfied by verifying the previously-fixed editor/plugin/font failures did not recur in the fresh logs. `REF-03` satisfied by confirming the current addon tree loads `aerobeat-input-core` and `gut` as editor plugins while the MediaPipe addon remains runtime-only in this project.
 
 **Commits:**
-- Pending final commit/push for this plan update.
+- `18044bb` - Document current assembly warning sweep
 
 **Lessons Learned:** The assembly is much cleaner than the earlier failure reports suggested; the remaining work is mostly about separating genuine runtime caveats from noisy shutdown/controller chatter. At the moment, the highest-value cleanup is the runtime-facing latency-metrics caveat because it is the only reproduced issue that affects app behavior rather than just log cleanliness.
 
