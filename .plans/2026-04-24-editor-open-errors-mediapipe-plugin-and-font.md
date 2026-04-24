@@ -68,14 +68,18 @@ This pass should stay narrow and truthful. We are not reopening broad MediaPipe 
 - `assets/fonts/`
 - `addons/`
 - `.plans/`
+- `.qa-logs/`
 
 **Files Created/Deleted/Modified:**
-- plugin/config/resource files as needed
+- `project.godot`
+- `assets/fonts/default_font.tres` (deleted)
+- `.qa-logs/task2-editor-open.log`
+- `.qa-logs/task2-import.log`
 - `.plans/2026-04-24-editor-open-errors-mediapipe-plugin-and-font.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Implemented the smallest truthful assembly-only fix set without inventing a fake editor plugin or broadening addon scope. In `project.godot:31-33`, removed `res://addons/aerobeat-input-mediapipe/plugin.cfg` from `[editor_plugins].enabled`, leaving only the real editor plugins `aerobeat-core` and `gut` enabled (`REF-02`, `REF-03`, `REF-04`). This stops Godot from trying to load the MediaPipe runtime adapter at `addons/aerobeat-input-mediapipe/src/input_provider.gd` as an editor plugin while preserving runtime addon usage, because the assembly still preloads and instantiates that adapter directly from `src/main.gd:4,71` and the integration tests still target the same runtime path in `tests/integration/test_assembly_integration.gd:3,34` and `tests/integration/test_full_pipeline.gd:4,30` (`REF-04`). For the font error, deleted the stale broken resource `assets/fonts/default_font.tres` after re-checking repo references: the only matches for `default_font.tres` / `default_font.ttf` in the assembly repo were the active plan text, a historical addon plan note, a stale `.godot` cache entry, and the resource itself; no live scene/project/runtime reference was present (`REF-05`). Validation evidence after the fix: `godot --headless --editor --path . --quit-after 1 --verbose` completed project initialization with plugin loading only for `res://addons/aerobeat-core/plugin.gd` and `res://addons/gut/gut_plugin.gd`; the output no longer referenced `res://addons/aerobeat-input-mediapipe/src/input_provider.gd` during plugin initialization and did not emit any `default_font.ttf` missing-file error. `godot --headless --path . --import --quit-after 1 --verbose` also completed without any `default_font.ttf` error and without loading the MediaPipe adapter as an editor plugin. Exact local evidence files captured for QA/audit: `.qa-logs/task2-editor-open.log` and `.qa-logs/task2-import.log`. The remaining log noise was unchanged non-scope editor shutdown leakage and controller mapping warnings, not the two targeted failures. Commit/push details pending below.
 
 ---
 
