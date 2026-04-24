@@ -140,29 +140,41 @@ Integrated import/runtime evidence: `grep -RIn` across live assembly-owned sourc
 
 **Folders Created/Deleted/Modified:**
 - `.plans/`
+- `.qa-logs/`
 
 **Files Created/Deleted/Modified:**
 - `.plans/2026-04-24-rename-assembly-core-addon-key-to-aerobeat-input-core.md`
+- `.qa-logs/task4-import.log`
+- `.qa-logs/task4-check-main.log`
+- `.qa-logs/task4-runtime.log`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Independent QA/audit passed against the integrated assembly state on current `main` commits `22081e3` in `aerobeat-assembly-community` and sibling MediaPipe commit `2c72817` in `../aerobeat-input-mediapipe-python` (`REF-02`, `REF-03`, `REF-04`, `REF-06`). I re-read the live files instead of trusting prior summaries and confirmed the assembly manifest now installs `aerobeat-input-core` from `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git` at `addons.jsonc:4-9`; the project/plugin wiring points at `res://addons/aerobeat-input-core/plugin.cfg` in `project.godot:31-33`; the main scene now mounts `res://addons/aerobeat-input-core/src/input_manager.gd` in `scenes/main.tscn:3-4`; and the assembly forwarding shim now extends the same truthful path in `src/input_manager.gd:1-6` (`REF-02`, `REF-03`).
+
+Generated addon-tree audit also passed (`REF-04`). The live install/cache trees contain `addons/aerobeat-input-core`, `addons/aerobeat-input-mediapipe`, `.addons/aerobeat-input-core`, and `.addons/aerobeat-input-mediapipe`, while direct absence checks confirmed both stale old mounts are gone: `addons/aerobeat-core` absent and `.addons/aerobeat-core` absent. The mounted MediaPipe addon in the integrated assembly now truthfully extends the renamed core path at `addons/aerobeat-input-mediapipe/src/input_provider.gd:1`, and the sibling source repo matches at `../aerobeat-input-mediapipe-python/src/input_provider.gd:1`, consistent with audited commit `2c72817`.
+
+Fresh validation reruns succeeded. `godot --headless --path . --import --quit-after 1000` exited cleanly and `.qa-logs/task4-import.log` shows normal import completion with no parse/load failures. `godot --headless --path . --script src/main.gd --check-only` exited cleanly and `.qa-logs/task4-check-main.log` contains only the engine banner. `godot --headless --path . --quit-after 2 --verbose` reached runtime and `.qa-logs/task4-runtime.log` shows `AeroBeat Assembly started`, `Tracking started`, `Registered MediaPipe addon adapter`, and `Latency display added`, with no parse/load errors in the log.
+
+Remaining old-name drift exists only as upstream branding/history caveats, not as a blocker for this coordinated rename slice. The only live non-runtime matches I found after excluding `.git` / `.plans` / `.beads` metadata were in the mounted core addon README (`addons/aerobeat-input-core/README.md:1,39` and mirrored `.addons/...`), which still says `aerobeat-core`. That is documentation/identity drift inside the dependency payload, not an active assembly import/path failure, and it does not reintroduce the stale mounted addon path.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** Completed the coordinated rename slice so the assembly and MediaPipe addon now both consume the core addon at the truthful mounted path `res://addons/aerobeat-input-core/...`. The assembly manifest key/path, plugin wiring, main-scene wiring, forwarding shim, regenerated addon tree, and mounted MediaPipe adapter all align with the renamed core path, and the integrated project still imports and reaches runtime cleanly.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-01` satisfied: the assembly addon key/path is now renamed, not just retargeted. `REF-02` satisfied via `addons.jsonc:4-9` using key `aerobeat-input-core` and repo URL `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git`. `REF-03` satisfied via `project.godot:31-33`, `scenes/main.tscn:3-4`, and `src/input_manager.gd:1-6` all pointing at `res://addons/aerobeat-input-core/...`. `REF-04` satisfied via current addon-tree inspection plus direct absence checks showing `addons/aerobeat-core` and `.addons/aerobeat-core` are gone while the renamed `aerobeat-input-core` / `aerobeat-input-mediapipe` trees exist in both install and cache. `REF-06` satisfied via sibling MediaPipe commit `2c72817` and matching live file `../aerobeat-input-mediapipe-python/src/input_provider.gd:1`, plus the mounted assembly copy `addons/aerobeat-input-mediapipe/src/input_provider.gd:1`, both extending `res://addons/aerobeat-input-core/src/interfaces/input_provider.gd`.
 
 **Commits:**
-- Pending
+- `2c72817` - Rename input-core addon mount path
+- `22081e3` - Rename assembly core addon path to aerobeat-input-core
+- `Pending` - Plan update with independent Task 4 audit evidence
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** When a GodotEnv addon-key rename crosses repo boundaries, the real blocker is usually not the manifest edit but stale generated payloads and addon-internal hardcoded paths. Purging generated mounts/caches and then auditing the refreshed payload directly is what turns the rename from “looks right in source” into “is actually true at runtime.” Remaining dependency README branding drift should be tracked separately, but it is not a valid reason to block this rename slice once live imports and runtime wiring are clean.
 
 ---
 
-*Completed on Pending*
+*Completed on 2026-04-24*
