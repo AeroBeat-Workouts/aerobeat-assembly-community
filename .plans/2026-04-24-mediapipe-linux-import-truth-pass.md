@@ -133,7 +133,7 @@ This pass needs to replace assumption with evidence. First reproduce the current
 - `a5a7472` - Repair Linux MediaPipe assembly import path
 - `226d9a7` - Sync MediaPipe truth-pass plan results
 - `0ffc2c4` - Record QA evidence for Linux MediaPipe truth pass
-- `ac8dff2` - Audit MediaPipe Linux truth-pass closure
+- `2778fd5` - Audit MediaPipe Linux truth-pass closure
 
 **Lessons Learned:** For cross-repo Godot addon truth passes, import success and runtime truth are different checks: file-path mounting, enabled plugin state, and live scene wiring all need independent verification. Also, a recoverable addon-internal error can be real without invalidating a narrower assembly-slice claim; the right move is to record it precisely and spin follow-on cleanup instead of overreporting either “fully clean” or “still blocked.”
 
