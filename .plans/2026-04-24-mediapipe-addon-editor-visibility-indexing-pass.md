@@ -70,7 +70,7 @@ Diagnosis: this is primarily an editor visibility / indexing problem caused by t
 **Reference Check:** `REF-01` matched the intended assembly install path for `aerobeat-input-mediapipe`. `REF-02` and `REF-04` matched the on-disk addon tree, including the root `.gdignore` that is suppressing normal editor indexing. `REF-03` showed the project only has `aerobeat-input-core` and `gut` enabled in `[editor_plugins]`, which is consistent with MediaPipe never becoming a discoverable editor plugin in the current scanned state.
 
 **Commits:**
-- `71f5534` - Document MediaPipe addon visibility diagnosis
+- Plan update committed and pushed to `main` with the MediaPipe addon visibility diagnosis.
 
 **Lessons Learned:** In Godot 4.6, an addon tree can still exist on disk and be directly readable through `FileAccess` / direct `load()` calls while remaining absent from the filesystem dock and global class cache if the installed addon root is covered by `.gdignore`. That produces a misleading “it exists but the editor can’t see it” state that looks like stale cache at first glance but is actually intentional scanner exclusion.
 
