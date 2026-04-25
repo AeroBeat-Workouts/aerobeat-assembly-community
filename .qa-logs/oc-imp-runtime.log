@@ -1,0 +1,30 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+[AutoStartManager] 0% - Starting sidecar runtime validation...
+[AutoStartManager] 25% - Resolving desktop sidecar runtime...
+[AutoStartManager] 50% - Runtime Python found at /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python
+[AutoStartManager] 75% - Checking MediaPipe installation in resolved runtime...
+[AutoStartManager] 100% - Python dependencies ready
+[AutoStartManager] 100% - Model asset ready at /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/models/pose_landmarker_full.task - starting server...
+[AutoStartManager] _start_server() called
+[AutoStartManager] Started sidecar with strategy linux-shell-process-group and server PID 2977811
+[AutoStartManager] _start_detached_server() returned PID: 2977811
+[AutoStartManager] Starting heartbeat immediately...
+[AutoStartManager] Setting up heartbeat on port 4244
+[AutoStartManager] Heartbeat target: 127.0.0.1:4244
+[AutoStartManager] Heartbeat timer started (interval: 500ms)
+[AutoStartManager] First heartbeat sent
+[AutoStartManager] Waiting 2.0s for server to stabilize...
+[MediaPipeServer] Starting UDP server on port 4242
+[MediaPipeServer] UDP socket bound to 127.0.0.1:4242
+[AutoStartManager] Server is running after wait!
+[CameraView] Starting stream from: http://127.0.0.1:4243/camera
+[CameraView] Connecting to 127.0.0.1:4243/camera
+[CameraView] connect_to_host returned: 0
+[CameraView] Initial TCP status: 1
+[CameraView] Final TCP status: 2
+[CameraView] Connected, sending HTTP request...
+[CameraView] Request sent, starting stream thread...
+[CameraView] Stream started successfully
+[CameraView] Stream thread started
+[CameraView] Stats: 26205113 bytes, 642 frames

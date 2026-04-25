@@ -1,0 +1,12 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+LOADED res://src/mediapipe_test_scene.gd :: GDScript
+LOADED res://src/mediapipe_landmark_drawer.gd :: GDScript
+LOADED res://src/mediapipe_provider_test.gd :: GDScript
+LOADED res://src/mediapipe_test_autostart_manager.gd :: GDScript
+LOADED res://scenes/mediapipe_test_scene.tscn :: PackedScene
+INSTANTIATED TestScene
+[TestScene] Pre-delete, stopping everything...
+[TestScene] Stopping everything...
+[TestScene] Cleanup complete
+LOAD_CHECK_OK

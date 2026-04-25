@@ -1,7 +1,7 @@
 # AeroBeat Assembly MediaPipe Test Scene Port for Editor and Build Validation
 
 **Date:** 2026-04-24  
-**Status:** Draft  
+**Status:** Complete  
 **Agent:** Pico 🐱‍🏍
 
 ---
@@ -183,25 +183,34 @@ Re-running the temporary proof scene advanced past the old blocker and reached l
 **Files Created/Deleted/Modified:**
 - `.plans/2026-04-24-assembly-mediapipe-test-scene-port-for-editor-and-build-validation.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Independent QA/audit reran the temporary proof surface directly against the current `main` at `612cd38` and confirmed the evidence holds. Exact rerun evidence recorded in `.qa-logs/oc-imp-*.log`: parse/load check via `~/.local/bin/godot --headless --path . -s .qa-logs/oc-izk-load-check.gd` logged `LOAD_CHECK_OK` and `INSTANTIATED TestScene` in `.qa-logs/oc-imp-load-check.log`, proving the duplicated scene/scripts still parse and instantiate in assembly. Headless editor-open via `~/.local/bin/godot --headless --path . --quit --editor` completed without MediaPipe parse/load failures in `.qa-logs/oc-imp-editor-open.log`, so the project still opens cleanly enough for truthful editor validation.
+
+The old blockers are also independently cleared. `.qa-logs/oc-imp-path-check.log` shows `MODEL_PATH=/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/models/pose_landmarker_full.task`, `MODEL_EXISTS=true`, and `RUNTIME_VALID=true`, confirming the wrapper now resolves model assets from the installed addon path instead of the broken assembly-parent path. `.qa-logs/oc-imp-import-check.log` confirms the installed runtime venv can now import `mediapipe`, `cv2`, and `numpy`, so the prior `MediaPipe is not importable...` blocker from `REF-05` is no longer present.
+
+Best truthful runtime rerun: `timeout 12s ~/.local/bin/godot --headless --path . scenes/mediapipe_test_scene.tscn` reached full temporary-proof behavior in `.qa-logs/oc-imp-runtime.log`: runtime Python resolved from the installed addon venv, dependency check passed (`Python dependencies ready`), model asset validation passed, detached sidecar launch succeeded, UDP server bound on `127.0.0.1:4242`, MJPEG camera stream connected on `127.0.0.1:4243`, and stream stats accumulated (`26205113 bytes, 642 frames`) before the intentional harness cutoff (`RUNTIME_EXIT_CODE=124` in `.qa-logs/oc-imp-exit-codes.txt`). That is strong enough evidence that this duplicated scene is now a truthful temporary proof surface for next-session interactive validation in assembly, even though it remains disposable scaffolding and not productized game flow.
+
+Best truthful Linux build-oriented validation available remains blocked at project-export setup, not at the temporary MediaPipe scene itself. `~/.local/bin/godot --headless --path . --export-release "Linux/X11" build/oc-imp-test.x86_64` failed exactly because the repo root has no `export_presets.cfg`, as captured in `.qa-logs/oc-imp-export.log` and `EXPORT_PRESETS_PRESENT=false` in `.qa-logs/oc-imp-exit-codes.txt`. So this task proves editor-open and runtime proof-surface viability, but it does not prove assembly exportability yet.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** A temporary duplicated MediaPipe validation surface inside `aerobeat-assembly-community` consisting of `scenes/mediapipe_test_scene.tscn` plus its copied helper scripts and a temporary assembly-local autostart wrapper. Independent reruns now confirm the scene still parses, opens in the editor, resolves the installed addon runtime/model paths correctly, imports `mediapipe` from the installed runtime venv, launches the Python sidecar, binds the UDP provider, and connects to the camera MJPEG stream. This is sufficient as truthful disposable proof scaffolding for the next interactive validation session inside assembly.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-01` satisfied: the MediaPipe `.testbed` proof surface was duplicated into assembly as temporary validation scaffolding rather than permanent product code. `REF-02` satisfied: the copied runtime scene/scripts remain faithful to the source testbed scope. `REF-03` satisfied: out-of-scope `.testbed/tests/**` and other nonessential harness files were not pulled into this proof pass. `REF-04` satisfied: `scenes/main.tscn` and main assembly wiring were not repurposed; the proof scene remains standalone. `REF-05` satisfied for the targeted blockers: the temporary scene now gets past the prior missing-model-path and missing-`mediapipe`-import failures. Deliberate remaining gap: Linux export proof is still blocked by missing root `export_presets.cfg`, so build/export success is not yet proven.
 
 **Commits:**
-- Pending.
+- `05ed306` - Add temporary MediaPipe validation scene
+- `9763158` - Fix temporary MediaPipe proof runtime asset resolution
+- `612cd38` - Document installed MediaPipe runtime import fix
+- `e86dc6b` - Audit temporary MediaPipe proof scene
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** For this addon, a truthful assembly proof surface depended more on validating the installed addon runtime contract than on wiring the assembly main scene. The temporary wrapper approach was sufficient to expose real blockers in order: first wrong model-asset resolution, then missing installed-runtime Python dependencies. Also, “best truthful build validation available” must explicitly report repo-export prerequisites; without `export_presets.cfg`, any claim of Linux export success would be fiction.
 
 ---
 
-*Completed on Pending*
+*Completed on 2026-04-24*
