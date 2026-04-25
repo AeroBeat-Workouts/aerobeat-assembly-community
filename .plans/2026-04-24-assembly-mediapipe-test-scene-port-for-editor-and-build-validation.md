@@ -104,7 +104,41 @@ Reference check: copied scope matches `REF-02`; no `.testbed/tests/**`, `install
 
 ---
 
-### Task 3: QA/audit the temporary duplicated MediaPipe validation scene for editor/runtime/build proof
+### Task 3: Fix temporary proof wrapper runtime path resolution
+
+**Bead ID:** `oc-oeq`  
+**SubAgent:** `primary`  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`, `REF-05`  
+**Prompt:** Fix the temporary duplicated MediaPipe proof scene so its runtime/autostart wrapper resolves sidecar runtime assets from the installed addon path, not from the assembly-local `res://src/...` path. Keep the fix minimal and temporary, update the plan with exact evidence, and commit/push by default.
+
+**Folders Created/Deleted/Modified:**
+- `src/`
+- `.qa-logs/`
+- `.plans/`
+
+**Files Created/Deleted/Modified:**
+- `src/mediapipe_test_autostart_manager.gd`
+- `.qa-logs/oc-oeq-load-check.log`
+- `.qa-logs/oc-oeq-path-check.gd`
+- `.qa-logs/oc-oeq-path-check.log`
+- `.qa-logs/oc-oeq-runtime.log`
+- `.plans/2026-04-24-assembly-mediapipe-test-scene-port-for-editor-and-build-validation.md`
+
+**Status:** ✅ Complete
+
+**Results:** Kept the fix temporary and local to `src/mediapipe_test_autostart_manager.gd` rather than rewriting the installed addon runtime helper. The wrapper now post-processes `DesktopSidecarRuntime.validate_runtime(...)` so manifest `model_assets[].relative_path` entries are re-resolved relative to the installed addon package root returned by `DesktopSidecarRuntime.get_package_root(ADDON_AUTOSTART_SCRIPT_PATH)`, not via the helper’s baked-in `res://../...` project-parent assumption. The wrapper also now logs the exact resolved model path when the required asset check passes.
+
+Exact validation evidence:
+- Parse/load still passes after the wrapper change: `~/.local/bin/godot --headless --path . -s .qa-logs/oc-izk-load-check.gd` logged `LOAD_CHECK_OK` and `INSTANTIATED TestScene`; mirrored run output captured in `.qa-logs/oc-oeq-load-check.log`.
+- Direct path proof from the wrapper: `~/.local/bin/godot --headless --path . -s .qa-logs/oc-oeq-path-check.gd` logged `MODEL_PATH=/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/models/pose_landmarker_full.task`, `MODEL_EXISTS=true`, and `RUNTIME_VALID=true` in `.qa-logs/oc-oeq-path-check.log`. That is the installed addon path, not the prior assembly-parent `../python_mediapipe/...` path.
+- Re-running the temporary proof scene (`timeout 25s ~/.local/bin/godot --headless --path . scenes/mediapipe_test_scene.tscn`) advanced past the old missing-model failure. `.qa-logs/oc-oeq-runtime.log` now shows runtime resolution at `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python`, then fails on the next truthful blocker: `MediaPipe is not importable from the prepared sidecar runtime` in that installed-addon runtime venv.
+
+Reference check: still honors `REF-01` temporary-scaffolding scope and leaves the copied proof scene separate from `REF-04` main-scene wiring; no permanent addon architecture changes were introduced.
+
+---
+
+### Task 4: QA/audit the temporary duplicated MediaPipe validation scene for editor/runtime/build proof
 
 **Bead ID:** `oc-imp`  
 **SubAgent:** `primary`  

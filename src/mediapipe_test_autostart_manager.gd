@@ -75,7 +75,38 @@ func _get_model_asset_path() -> String:
 	return DesktopSidecarRuntime.get_model_asset_path(ADDON_AUTOSTART_SCRIPT_PATH, _get_required_model_name())
 
 func _validate_sidecar_runtime() -> Dictionary:
-	return DesktopSidecarRuntime.validate_runtime(ADDON_AUTOSTART_SCRIPT_PATH, _get_required_model_name())
+	var result := DesktopSidecarRuntime.validate_runtime(ADDON_AUTOSTART_SCRIPT_PATH, _get_required_model_name())
+	var existing_errors: PackedStringArray = result.get("errors", PackedStringArray())
+	var filtered_errors := PackedStringArray()
+	for error in existing_errors:
+		if not String(error).begins_with("Required model asset listed in runtime manifest is missing: "):
+			filtered_errors.append(error)
+
+	var manifest_path := DesktopSidecarRuntime.get_sidecar_runtime_manifest_path(ADDON_AUTOSTART_SCRIPT_PATH)
+	var manifest_data = DesktopSidecarRuntime.read_json_file(manifest_path)
+	if typeof(manifest_data) != TYPE_DICTIONARY:
+		result["errors"] = filtered_errors
+		result["valid"] = filtered_errors.is_empty()
+		return result
+
+	var package_root := DesktopSidecarRuntime.get_package_root(ADDON_AUTOSTART_SCRIPT_PATH)
+	var manifest: Dictionary = manifest_data
+	var model_assets = manifest.get("model_assets", [])
+	if typeof(model_assets) == TYPE_ARRAY:
+		for model_variant in model_assets:
+			if typeof(model_variant) != TYPE_DICTIONARY:
+				continue
+			var model_entry: Dictionary = model_variant
+			var relative_path := String(model_entry.get("relative_path", ""))
+			if relative_path.is_empty():
+				continue
+			var absolute_path := ProjectSettings.globalize_path(package_root.path_join(relative_path))
+			if not FileAccess.file_exists(absolute_path):
+				filtered_errors.append("Required model asset listed in runtime manifest is missing: %s" % absolute_path)
+
+	result["errors"] = filtered_errors
+	result["valid"] = filtered_errors.is_empty()
+	return result
 
 func get_server_pid() -> int:
 	return server_pid
@@ -213,7 +244,7 @@ func check_model_asset_available() -> bool:
 	var model_name := _get_required_model_name()
 	var model_path := _get_model_asset_path()
 	if FileAccess.file_exists(model_path):
-		_emit_progress(100, "Model asset ready - starting server...")
+		_emit_progress(100, "Model asset ready at %s - starting server..." % model_path)
 		return true
 
 	var message := "Missing MediaPipe model asset: %s (expected at %s)" % [model_name, model_path]
