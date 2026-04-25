@@ -76,12 +76,31 @@ Out of scope for the temporary duplication pass: `.testbed/scenes/install_progre
 - `.plans/`
 
 **Files Created/Deleted/Modified:**
-- assembly validation scene/script/test files as needed
+- `scenes/mediapipe_test_scene.tscn`
+- `src/mediapipe_test_scene.gd`
+- `src/mediapipe_landmark_drawer.gd`
+- `src/mediapipe_provider_test.gd`
+- `src/mediapipe_test_autostart_manager.gd`
+- `.qa-logs/oc-izk-load-check.gd`
+- `.qa-logs/oc-izk-load-check.log`
+- `.qa-logs/oc-izk-editor-open.log`
+- `.qa-logs/oc-izk-runtime.log`
+- `.qa-logs/oc-izk-export.log`
 - `.plans/2026-04-24-assembly-mediapipe-test-scene-port-for-editor-and-build-validation.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Duplicated the four scoped `.testbed` assets from `REF-02` into assembly as `scenes/mediapipe_test_scene.tscn`, `src/mediapipe_test_scene.gd`, `src/mediapipe_landmark_drawer.gd`, and `src/mediapipe_provider_test.gd`, then retargeted their assembly-facing resource paths from `res://addons/aerobeat-input-mediapipe-python/...` to `res://addons/aerobeat-input-mediapipe/...`. The copied scene stays standalone and does not touch `scenes/main.tscn` / `InputManager`, satisfying `REF-01` / `REF-04`.
+
+A fifth file, `src/mediapipe_test_autostart_manager.gd`, was added as a temporary validation-only wrapper copy because the mounted addon autostart script in the ignored addon tree still preloads `res://addons/aerobeat-input-mediapipe-python/...` and would not parse when the duplicated scene instantiated. The wrapper preserves the addon runtime/process implementation but pins runtime-path resolution back to `res://addons/aerobeat-input-mediapipe/src/autostart_manager.gd`, so the temporary validation scene can load against the assembly addon layout without changing ignored addon vendor files during this task.
+
+Validation evidence:
+- Parse/load proof: `~/.local/bin/godot --headless --path . -s .qa-logs/oc-izk-load-check.gd` succeeded and logged `LOAD_CHECK_OK` plus `INSTANTIATED TestScene` in `.qa-logs/oc-izk-load-check.log`.
+- Best truthful editor-open check: `~/.local/bin/godot --headless --path . --quit --editor` succeeded with exit code `0` and no MediaPipe parse/load errors in `.qa-logs/oc-izk-editor-open.log`.
+- Best truthful runtime check: `timeout 20s ~/.local/bin/godot --headless --path . scenes/mediapipe_test_scene.tscn` started the duplicated scene and reached AutoStartManager validation, then failed for a real environment reason — missing required model assets under `../python_mediapipe/assets/models/pose_landmarker_{full,heavy,lite}.task` — as captured in `.qa-logs/oc-izk-runtime.log`.
+- Best truthful Linux build-oriented check available: direct export attempt `~/.local/bin/godot --headless --path . --export-release "Linux/X11" build/oc-izk-test.x86_64` failed immediately because the repo has no root `export_presets.cfg`; this exact limitation is recorded in `.qa-logs/oc-izk-export.log`. No synthetic export preset was invented during this task.
+
+Reference check: copied scope matches `REF-02`; no `.testbed/tests/**`, `install_progress.gd`, or main-scene rewiring was introduced, honoring `REF-03` / `REF-04` / `REF-05`. Commit/push pending.
 
 ---
 
