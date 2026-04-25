@@ -138,7 +138,38 @@ Reference check: still honors `REF-01` temporary-scaffolding scope and leaves th
 
 ---
 
-### Task 4: QA/audit the temporary duplicated MediaPipe validation scene for editor/runtime/build proof
+### Task 4: Fix installed MediaPipe runtime importability for the temporary proof scene
+
+**Bead ID:** `oc-1jq`  
+**SubAgent:** `primary`  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`, `REF-05`  
+**Prompt:** Fix the next discovered blocker in the temporary duplicated MediaPipe proof scene: the prepared addon runtime venv under the installed assembly addon path must be able to import `mediapipe`. Diagnose the exact install/runtime-prep failure, make the smallest truthful fix, and rerun the proof scene. Keep this temporary-proof scope tight and update the plan with exact evidence. Commit/push by default.
+
+**Folders Created/Deleted/Modified:**
+- `.qa-logs/`
+- `.plans/`
+- `addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/`
+
+**Files Created/Deleted/Modified:**
+- `.qa-logs/oc-1jq-pip-install.log`
+- `.qa-logs/oc-1jq-import-check.log`
+- `.qa-logs/oc-1jq-prepare-runtime.json`
+- `.qa-logs/oc-1jq-runtime.log`
+- `.plans/2026-04-24-assembly-mediapipe-test-scene-port-for-editor-and-build-validation.md`
+- `addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/**` (generated local runtime site-packages only; ignored)
+
+**Status:** ✅ Complete
+
+**Results:** Diagnosed the blocker directly in the installed addon runtime under `REF-05`: the prepared venv existed and the runtime contract files were present, but `mediapipe` was not actually installed inside `addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/`. The exact failing baseline was `addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python -c "import mediapipe"`, which raised `ModuleNotFoundError: No module named 'mediapipe'`, while `runtime-manifest.json` still reported only `"validation_status": "venv_created"`. That made the failure an honest runtime-prep gap, not a wrapper path bug.
+
+Applied the smallest truthful fix without broadening architecture: installed the addon’s documented `python_mediapipe/requirements.txt` into the already-prepared installed-addon runtime venv. No source-code changes were required for this bead; only the generated local runtime contents changed. Exact evidence: `.qa-logs/oc-1jq-pip-install.log` shows `addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python -m pip install -r addons/aerobeat-input-mediapipe/python_mediapipe/requirements.txt` completed successfully and installed `mediapipe-0.10.33`, `opencv-python-4.13.0.92`, `opencv-contrib-python-4.13.0.92`, and `numpy-2.4.4` into the installed runtime. `.qa-logs/oc-1jq-import-check.log` then confirmed `MEDIAPIPE_OK`, `CV2_OK`, `NUMPY_OK`, and `PYTHON_OK` from that exact installed-addon runtime python path. Re-running `python3 addons/aerobeat-input-mediapipe/python_mediapipe/prepare_runtime.py --platform linux-x64 --mode dev --validate --json` from the assembly repo still returned `"validation_errors": []` in `.qa-logs/oc-1jq-prepare-runtime.json`; the helper remains honest that plain `--validate` is contract-only and warns that dependency installation is outside that foundation pass unless separately performed.
+
+Re-running the temporary proof scene advanced past the old blocker and reached live runtime behavior. `.qa-logs/oc-1jq-runtime.log` now shows: runtime python resolved from the installed addon path, `Python dependencies ready`, model asset validation passing, sidecar launch with PID `2976479`, UDP server bind on `127.0.0.1:4242`, camera HTTP stream connection to `127.0.0.1:4243`, and sustained stream stats before the intentional harness cutoff (`EXIT_CODE=124` from `timeout 12s`). So the prior `MediaPipe is not importable...` failure is fixed; no new blocker appeared in this bounded rerun.
+
+---
+
+### Task 5: QA/audit the temporary duplicated MediaPipe validation scene for editor/runtime/build proof
 
 **Bead ID:** `oc-imp`  
 **SubAgent:** `primary`  

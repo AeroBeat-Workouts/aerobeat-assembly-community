@@ -1,0 +1,6 @@
+== importability check ==
+2026-04-24T22:05:27-04:00
+MEDIAPIPE_OK /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/lib/python3.12/site-packages/mediapipe/__init__.py
+CV2_OK /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/lib/python3.12/site-packages/cv2/__init__.py
+NUMPY_OK /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/lib/python3.12/site-packages/numpy/__init__.py
+PYTHON_OK /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python
