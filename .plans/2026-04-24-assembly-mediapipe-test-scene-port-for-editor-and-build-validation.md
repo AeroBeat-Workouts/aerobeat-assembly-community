@@ -207,7 +207,7 @@ Best truthful Linux build-oriented validation available remains blocked at proje
 - `05ed306` - Add temporary MediaPipe validation scene
 - `9763158` - Fix temporary MediaPipe proof runtime asset resolution
 - `612cd38` - Document installed MediaPipe runtime import fix
-- `e86dc6b` - Audit temporary MediaPipe proof scene
+- `c6437f1` - Audit temporary MediaPipe proof scene
 
 **Lessons Learned:** For this addon, a truthful assembly proof surface depended more on validating the installed addon runtime contract than on wiring the assembly main scene. The temporary wrapper approach was sufficient to expose real blockers in order: first wrong model-asset resolution, then missing installed-runtime Python dependencies. Also, “best truthful build validation available” must explicitly report repo-export prerequisites; without `export_presets.cfg`, any claim of Linux export success would be fiction.
 
