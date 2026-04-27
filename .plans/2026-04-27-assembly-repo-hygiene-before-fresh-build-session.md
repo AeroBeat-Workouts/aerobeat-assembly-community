@@ -133,25 +133,30 @@ For `.qa-logs/`, I deliberately did **not** blanket-ignore the folder because tr
 **Files Created/Deleted/Modified:**
 - `.plans/2026-04-27-assembly-repo-hygiene-before-fresh-build-session.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Audit passed against the current repo state plus coder evidence in commits `5012acb` and `0d615c1`. The path migration is now normalized in tracked history: only `build-scripts/build-test.sh`, `docs/INVESTIGATION-build-distribution.md`, and `tests/` remain live at the repo surface, while the old root paths `build-test.sh`, `INVESTIGATION-build-distribution.md`, and `test/` are gone from the working tree and commit history shows they were intentionally replaced rather than accidentally dropped (`REF-04`, `REF-05`). Current runtime/test entrypoints also truthfully point at the new layout: `README.md`, `.github/workflows/gut_ci.yml`, and `build-scripts/build-test.sh` all use `tests/` / `res://tests`, and the moved script now resolves repo root through its parent directory before running assembly validation.
+
+Transient artifacts are handled truthfully rather than hidden with a misleading blanket ignore rule. `.gitignore` still keeps generated dependency/install state ignored (`addons/*`, `.addons/`) and does not pretend that `.qa-logs/` is disposable wholesale; that matches the actual repo practice because many `.qa-logs/*` evidence files are tracked and the coder committed the currently cited evidence files instead of leaving them as unexplained noise (`REF-02`, `REF-03`). I also verified there is no leftover half-executed hygiene migration in the working tree: the only current untracked file is `.plans/2026-04-27-assembly-mediapipe-editor-and-linux-build-proof.md`, which is an explicit draft for the next session rather than a transient artifact from this cleanup pass.
+
+Fresh-session handoff verdict: **truthful for the hygiene slice**. The repo now clearly defers the Linux build/export proof instead of pretending it was completed in this pass; the plan repeatedly records that build/export validation was intentionally not resumed here, and the committed changes are limited to layout/docs/script/test-surface normalization plus evidence curation (`REF-06`). Caveat recorded, not a blocker: the repo is not globally clean because the next-session draft plan is still untracked, but that is separate intentional planning state and does not undermine closure of this hygiene bead.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** A truthful fresh-session handoff for the assembly repo’s next Linux build/export proof. The repo-layout migration was normalized and committed, the active validation/documentation surfaces now consistently use `tests/` / `res://tests`, repo-local `AGENTS.md` stayed intentionally removed, and cited QA evidence under `.qa-logs/` was curated into tracked history instead of being left as ambiguous noise.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-01` satisfied by the post-cleanup repo state recorded in commits `5012acb` and `0d615c1`, with only one unrelated untracked next-session draft plan remaining. `REF-02` satisfied because `.gitignore` continues to ignore generated dependency/install state without falsely declaring `.qa-logs/` disposable. `REF-03` satisfied because the relevant `.qa-logs/` evidence files are now tracked and the scratch leftovers identified during research are gone. `REF-04` and `REF-05` satisfied because the intentional moves to `build-scripts/build-test.sh`, `docs/INVESTIGATION-build-distribution.md`, and `tests/` are now the truthful live paths, with no lingering root-path entrypoints. `REF-06` satisfied because the build/export proof remains explicitly deferred in this hygiene plan rather than half-executed or silently implied.
 
 **Commits:**
-- Pending.
+- `5012acb` - Normalize assembly repo hygiene migration
+- `0d615c1` - Update hygiene plan with implementation results
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** For assembly repos that keep historical evidence in `.qa-logs/`, the truthful cleanup move is usually selective curation plus explicit plan citations, not a blanket ignore rule. Also, path migrations need the runtime/test entrypoints (`README`, CI, and helper scripts) updated in the same slice or the next session inherits a misleading half-migrated baseline.
 
 ---
 
-*Completed on Pending*
+*Completed on 2026-04-27*
