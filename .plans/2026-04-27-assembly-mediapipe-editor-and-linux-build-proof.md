@@ -156,12 +156,20 @@ Truthful validation passed on this Linux host. The final bundle build completed 
 - build/output folders as needed for QA evidence
 
 **Files Created/Deleted/Modified:**
-- QA evidence under `.qa-logs/`
+- `.qa-logs/oc-oz4-editor-open.log`
+- `.qa-logs/oc-oz4-repo-proof-runtime.log`
+- `.qa-logs/oc-oz4-artifact-proof-runtime.log`
 - `.plans/2026-04-27-assembly-mediapipe-editor-and-linux-build-proof.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Completed on 2026-04-27 with fresh QA-only evidence gathered independently from the implementation notes. I first claimed `oc-oz4`, confirmed the repo was clean at `main...origin/main`, and then re-ran the proof paths directly from the live repo/artifact instead of trusting the coder logs. The initially discovered live Godot plugin session was stale/non-responsive, so I did **not** rely on it for QA; instead I used fresh shell-driven Godot launches and artifact execution, which also avoids inheriting editor-cache state.
+
+Repo/editor proof passed. Clean editor-open proof was re-established with `godot --path . --editor --quit-after 240 --log-file .qa-logs/oc-oz4-editor-open.log`; the resulting log shows the editor starting cleanly, loading the OpenClaw plugin, and exiting with no project warnings/errors (`REF-03`, `REF-06`). I then ran the temporary proof scene directly from source with `godot --path . --scene res://scenes/mediapipe_test_scene.tscn --quit-after 360 --log-file .qa-logs/oc-oz4-repo-proof-runtime.log` (`REF-04`, `REF-07`). That fresh runtime log shows the installed-addon Linux runtime resolving successfully, `mediapipe` dependencies validating, the sidecar starting and staying alive (`Server is running after wait!`), and the MJPEG preview path connecting successfully (`Stream started successfully`) before a clean timed exit. A targeted grep over the QA logs found no `ERROR`, `WARNING`, `Failed`, `Auto-start failed`, or similar failure markers.
+
+Built artifact proof also passed under a stronger QA path than just reusing the unpacked `dist/` folder. I extracted the shipped archive itself with `tar -xzf dist/AeroBeatAssemblyProof-Linux.tar.gz -C ~/.openclaw/workspace/.temp/oc-oz4-artifact` and launched the extracted bundle with `./run-proof.sh --quit-after 360`, capturing output to `.qa-logs/oc-oz4-artifact-proof-runtime.log` (`REF-05`, `REF-07`). The extracted artifact booted into the proof scene as expected (`Mediapipe proof export feature detected; launching proof scene`), resolved the bundled relative runtime path inside `addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python`, started the detached sidecar successfully, and brought up the camera preview stream before clean exit. `tar -tzf dist/AeroBeatAssemblyProof-Linux.tar.gz` and inspection of the extracted tree confirmed the archive really carries the loose sidecar payload, including the `python_mediapipe/` scripts, model assets, and `assets/runtimes/linux-x64/venv/` tree needed by the proof run.
+
+Residual caveats for audit: this remains a Linux x86_64-only temporary proof artifact; it depends on the loose bundled Python sidecar/runtime payload rather than a tightly integrated export; it still needs webcam/device access for the preview path to behave fully; and QA validated timed startup/runtime smoke, not a long interactive soak or longer-session stability pass. Also, because the pre-existing Godot plugin session was stale, the in-editor verification was done through a fresh editor launch log rather than by driving the already-open session.
 
 ---
 
@@ -182,24 +190,28 @@ Truthful validation passed on this Linux host. The final bundle build completed 
 - `.plans/2026-04-27-assembly-mediapipe-editor-and-linux-build-proof.md`
 - final audit evidence under `.qa-logs/`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Audit completed on 2026-04-27 and closure passed. I claimed `oc-x47`, then independently checked the live repo state, commits, proof files, and retained QA/coder evidence instead of trusting only the prose summary. The requested slice is now truthfully supported: (1) fresh QA editor-open evidence in `.qa-logs/oc-oz4-editor-open.log` shows the project starting and exiting without project warnings/errors (`REF-03`, `REF-06`); (2) fresh repo-level proof runtime evidence in `.qa-logs/oc-oz4-repo-proof-runtime.log` shows the temporary MediaPipe proof scene resolving the GodotEnv-installed runtime at `addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python`, validating dependencies, starting the sidecar, and bringing up the camera preview without runtime failure (`REF-04`, `REF-07`); (3) the repo now truthfully owns Linux export configuration via committed `export_presets.cfg`, the export-feature redirect in `src/main.gd`, the exported-runtime path normalization in `src/mediapipe_test_autostart_manager.gd`, and the reproducible bundle script `build-scripts/build-linux-bundle.sh` (`REF-05`); and (4) fresh artifact-level QA evidence in `.qa-logs/oc-oz4-artifact-proof-runtime.log` plus the shipped `dist/AeroBeatAssemblyProof-Linux.tar.gz` contents show the built artifact booting the proof scene and using the bundled loose sidecar payload successfully.
+
+Final-state normalization was still needed at audit time: the plan had not yet recorded Task 5 / Final Results, the new `oc-oz4` QA logs were not yet committed, and a generated `icon.svg.import` file existed untracked after the new root icon was added. I normalized that final state by recording the audit verdict here and committing the retained QA evidence plus `icon.svg.import` so the repo ends with a clean, documented proof surface instead of hidden local residue. Remaining truthful caveats are unchanged in substance and are now explicitly accepted as part of closure: this is a temporary Linux x86_64-only proof path, it still depends on shipping the loose `python_mediapipe/` sidecar/runtime payload, it still expects webcam/device access for the live preview path, and built-artifact validation was a timed startup/runtime smoke pass rather than a long interactive soak. Additional non-blocking audit note: the export proof logs still include OpenClaw plugin bridge noise (`port 27183 already in use`) and a Godot `ObjectDB instances leaked at exit` warning during headless export/smoke runs, but those did not prevent successful export or successful artifact/runtime validation and therefore do not invalidate the requested proof slice.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** A truthful proof path inside `aerobeat-assembly-community` showing that the assembly repo can open cleanly in Godot, run the temporary duplicated MediaPipe validation scene from the repo while resolving the GodotEnv-installed `mediapipe-python` runtime, export a dedicated Linux proof build from the assembly repo itself, and open/validate the resulting built artifact with the same sidecar runtime flow.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-03`, `REF-04`, `REF-05`, `REF-06`, and `REF-07` are satisfied by retained live evidence. Clean editor-open is supported by `.qa-logs/oc-oz4-editor-open.log`. Repo-level runtime proof is supported by `.qa-logs/oc-oz4-repo-proof-runtime.log` and the committed proof-scene scaffolding. Linux export/build truth is supported by `export_presets.cfg`, `build-scripts/build-linux-bundle.sh`, `src/main.gd`, `src/mediapipe_test_autostart_manager.gd`, and `.qa-logs/oc-dx7-export.log` / `.qa-logs/oc-dx7-bundle-gui-smoke.log`. Built-artifact validation is supported by `.qa-logs/oc-oz4-artifact-proof-runtime.log` and the shipped `dist/AeroBeatAssemblyProof-Linux.tar.gz` contents. Deliberate deviations/limits are documented rather than hidden: temporary proof scaffolding remains in place, the export path is Linux-only, the artifact bundles a loose Python sidecar/runtime payload, webcam access is still part of the real proof path, and runtime validation was a timed smoke pass rather than a long soak.
 
 **Commits:**
-- Pending.
+- `42ffc50` - Prove assembly MediaPipe editor runtime path
+- `b61c04d` - Proof assembly MediaPipe Linux export bundle
+- `Pending audit commit` - Record Task 5 audit closure, final plan results, retained QA logs, and final repo normalization
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** For this consumer-repo proof path, the durable truth is not just code changes; it also requires explicitly owned export configuration, retained proof logs, and a clean recorded distinction between repo-owned files and ignored generated addon/runtime state. The proof is strong enough to close, but only when its packaging/runtime limitations are said out loud instead of being implied away.
 
 ---
 
