@@ -122,19 +122,23 @@ Clean-open proof was then re-established from a fresh single GUI editor launch w
 - build/output folders as needed
 
 **Files Created/Deleted/Modified:**
+- `.gitignore`
 - `build-scripts/build-linux-bundle.sh`
-- `build-scripts/build-test.sh`
-- `docs/INVESTIGATION-build-distribution.md`
-- `tests/integration/test_assembly_integration.gd`
-- `tests/integration/test_full_pipeline.gd`
-- `tests/test_example.gd`
-- `export_presets.cfg` or equivalent export setup if truly required
+- `export_presets.cfg`
+- `src/main.gd`
+- `src/mediapipe_test_autostart_manager.gd`
 - validation/build evidence under `.qa-logs/`
 - `.plans/2026-04-27-assembly-mediapipe-editor-and-linux-build-proof.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Completed on 2026-04-27. The original blocker was real: root export failed immediately because the repo had no `export_presets.cfg`, and this host also lacked Godot 4.6.2 Linux export templates. I first proved the missing-preset blocker with `godot --headless --path . --export-release "Linux Proof" build/linux-proof/AeroBeatAssemblyProof.x86_64` (`.qa-logs/oc-dx7-export-attempt1.log`), then installed the required host templates into `~/.local/share/godot/export_templates/4.6.2.stable/{linux_debug.x86_64,linux_release.x86_64,version.txt}` by extracting the official `Godot_v4.6.2-stable_export_templates.tpz` release asset.
+
+Durable repo changes were kept minimal and proof-oriented. I added a real root `export_presets.cfg` with a dedicated `Linux Proof` preset that sets the custom feature `mediapipe_proof` and excludes build/dist/log plan clutter from exported resources. I removed `export_presets.cfg` from `.gitignore` so the repo now truthfully owns its export setup. I updated `src/main.gd` so the `mediapipe_proof` export feature cleanly redirects the exported app into `res://scenes/mediapipe_test_scene.tscn` instead of the normal app shell, preserving the default editor/dev main scene while giving the Linux export a truthful proof surface. I also updated `src/mediapipe_test_autostart_manager.gd` to normalize exported runtime paths against the executable directory when running as a template build, fixing the initial exported-artifact failure where the proof scene resolved the runtime but the detached sidecar launch still used a non-working relative Python path.
+
+I then finished the in-progress Linux bundle path instead of inventing a new one. `build-scripts/build-linux-bundle.sh` now performs the actual reproducible proof flow: (1) rewrites the prepared installed-addon runtime manifest to `release` mode with `python3 addons/aerobeat-input-mediapipe/python_mediapipe/prepare_runtime.py --platform linux-x64 --mode release --validate --json`, (2) exports the project with `godot --headless --path . --export-release "Linux Proof" build/linux-proof/AeroBeatAssemblyProof.x86_64`, and (3) assembles `dist/AeroBeatAssemblyProof-Linux/` with the exported binary/PCK plus the loose `addons/aerobeat-input-mediapipe/python_mediapipe/` payload that the exported proof scene truly needs to launch the sidecar runtime. The script also emits `dist/AeroBeatAssemblyProof-Linux.tar.gz` for distribution and records exact export/runtime evidence in `.qa-logs/oc-dx7-prepare-release-runtime.json`, `.qa-logs/oc-dx7-export.log`, `.qa-logs/oc-dx7-bundle.log`, and `.qa-logs/oc-dx7-bundle-gui-smoke.log`.
+
+Truthful validation passed on this Linux host. The final bundle build completed with `./build-scripts/build-linux-bundle.sh`. Artifact layout now exists at `build/linux-proof/AeroBeatAssemblyProof.x86_64`, `build/linux-proof/AeroBeatAssemblyProof.pck`, `dist/AeroBeatAssemblyProof-Linux/`, and `dist/AeroBeatAssemblyProof-Linux.tar.gz`. Bundle size is currently about `639M` uncompressed / `243M` tarred because it carries the prepared Linux sidecar runtime. High-fidelity coder validation was then run from the built artifact itself with `dist/AeroBeatAssemblyProof-Linux/AeroBeatAssemblyProof.x86_64 --quit-after 360`, and `.qa-logs/oc-dx7-bundle-gui-smoke.log` shows the exported proof feature activating, the release-mode runtime resolving at `addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python`, the sidecar reaching `Server is running after wait!`, and the MJPEG preview path reaching `Stream started successfully` before clean quit (`EXIT=0`). Remaining truthful limitations for QA: this artifact is Linux x86_64 only, still depends on the prepared installed-addon runtime and loose Python sidecar payload, still needs webcam access for the preview path, and coder validation stopped at a timed smoke run rather than a long interactive manual play session.
 
 ---
 

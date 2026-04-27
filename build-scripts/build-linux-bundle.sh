@@ -1,59 +1,33 @@
 #!/bin/bash
-# build-linux-bundle.sh - Build Linux distribution bundle for AeroBeat
-# 
-# Usage:
-#   ./build-linux-bundle.sh [--skip-export] [--skip-venv]
+# build-linux-bundle.sh - Build a truthful Linux proof bundle for AeroBeat Assembly.
 #
-# Options:
-#   --skip-export   Skip Godot export (useful for testing)
-#   --skip-venv     Skip Python venv creation (useful for re-runs)
-#
-# Output:
-#   Creates AeroBeat-Linux.tar.gz with full self-contained bundle
+# This script exports the Godot project with the dedicated MediaPipe proof preset,
+# rewrites the installed addon runtime manifest to release mode, and copies the
+# loose Python sidecar payload required by the exported binary.
 
-set -e
+set -euo pipefail
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Configuration
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ADDON_ROOT="${PROJECT_ROOT}/addons/aerobeat-input-mediapipe"
-BUILD_DIR="${PROJECT_ROOT}/build"
+PYTHON_MEDIAPIPE_DIR="${ADDON_ROOT}/python_mediapipe"
+PREPARE_RUNTIME_SCRIPT="${PYTHON_MEDIAPIPE_DIR}/prepare_runtime.py"
+BUILD_DIR="${PROJECT_ROOT}/build/linux-proof"
 DIST_DIR="${PROJECT_ROOT}/dist"
-if [ ! -d "${PROJECT_ROOT}/addons/aerobeat-input-mediapipe" ]; then
-    echo "Error: addons/aerobeat-input-mediapipe is missing. Run godotenv addons install from the repo root first."
-    exit 1
-fi
-
-BUNDLE_NAME="AeroBeat-Linux"
+BUNDLE_NAME="AeroBeatAssemblyProof-Linux"
 BUNDLE_DIR="${DIST_DIR}/${BUNDLE_NAME}"
+EXPORT_NAME="AeroBeatAssemblyProof.x86_64"
+EXPORT_PRESET="Linux Proof"
+RUNTIME_PLATFORM="linux-x64"
+RELEASE_RUNTIME_LOG="${PROJECT_ROOT}/.qa-logs/oc-dx7-prepare-release-runtime.json"
+EXPORT_LOG="${PROJECT_ROOT}/.qa-logs/oc-dx7-export.log"
+BUNDLE_LOG="${PROJECT_ROOT}/.qa-logs/oc-dx7-bundle.log"
 
-# Parse arguments
-SKIP_EXPORT=false
-SKIP_VENV=false
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --skip-export)
-            SKIP_EXPORT=true
-            shift
-            ;;
-        --skip-venv)
-            SKIP_VENV=true
-            shift
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 1
-            ;;
-    esac
-done
-
-# Helper functions
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -71,244 +45,121 @@ log_error() {
 }
 
 check_command() {
-    if ! command -v "$1" &> /dev/null; then
-        log_error "$1 is not installed. Please install it first."
+    if ! command -v "$1" >/dev/null 2>&1; then
+        log_error "$1 is not installed"
         exit 1
     fi
 }
 
-# Pre-flight checks
 log_info "Checking prerequisites..."
-check_command "godot"
-check_command "python3"
-check_command "tar"
+check_command godot
+check_command python3
+check_command tar
 
-# Verify Godot version (needs 4.x)
-GODOT_VERSION=$(godot --version 2>/dev/null | head -1 | grep -oP '\d+\.\d+' || echo "unknown")
-log_info "Godot version: $GODOT_VERSION"
+if [ ! -d "${ADDON_ROOT}" ]; then
+    log_error "Installed MediaPipe addon is missing at ${ADDON_ROOT}. Run 'godotenv addons install' first."
+    exit 1
+fi
 
-# Clean and create directories
-log_info "Setting up build directories..."
+if [ ! -f "${PREPARE_RUNTIME_SCRIPT}" ]; then
+    log_error "Missing runtime preparation helper at ${PREPARE_RUNTIME_SCRIPT}"
+    exit 1
+fi
+
+mkdir -p "${PROJECT_ROOT}/.qa-logs" "${BUILD_DIR}" "${DIST_DIR}"
+rm -rf "${BUNDLE_DIR}" "${DIST_DIR}/${BUNDLE_NAME}.tar.gz"
+
+log_info "Rewriting the prepared Linux runtime manifest to release mode..."
+(
+    cd "${ADDON_ROOT}"
+    python3 "${PREPARE_RUNTIME_SCRIPT}" --platform "${RUNTIME_PLATFORM}" --mode release --validate --json
+) | tee "${RELEASE_RUNTIME_LOG}"
+
+if [ ! -f "${PROJECT_ROOT}/export_presets.cfg" ]; then
+    log_error "export_presets.cfg is missing from the project root"
+    exit 1
+fi
+
+log_info "Exporting Godot project with preset '${EXPORT_PRESET}'..."
+(
+    cd "${PROJECT_ROOT}"
+    godot --headless --path . --export-release "${EXPORT_PRESET}" "${BUILD_DIR}/${EXPORT_NAME}"
+) >"${EXPORT_LOG}" 2>&1 || {
+    tail -n 200 "${EXPORT_LOG}" >&2 || true
+    log_error "Godot export failed; see ${EXPORT_LOG}"
+    exit 1
+}
+
+log_success "Export finished"
+
+EXPORT_PCK="${BUILD_DIR}/${EXPORT_NAME%.x86_64}.pck"
+if [ ! -f "${BUILD_DIR}/${EXPORT_NAME}" ]; then
+    log_error "Expected export executable missing: ${BUILD_DIR}/${EXPORT_NAME}"
+    exit 1
+fi
+if [ ! -f "${EXPORT_PCK}" ]; then
+    log_warn "Expected external PCK missing at ${EXPORT_PCK}; continuing in case Godot embedded it"
+fi
+
+log_info "Assembling proof bundle..."
 rm -rf "${BUNDLE_DIR}"
-mkdir -p "${BUNDLE_DIR}/sidecar/python"
-mkdir -p "${BUNDLE_DIR}/sidecar/mediapipe_server"
-mkdir -p "${BUILD_DIR}"
-mkdir -p "${DIST_DIR}"
-
-# Step 1: Create Python virtual environment with MediaPipe + OpenCV
-if [ "$SKIP_VENV" = false ]; then
-    log_info "Creating Python virtual environment..."
-    VENV_DIR="${BUILD_DIR}/.venv"
-    
-    # Clean previous venv
-    rm -rf "$VENV_DIR"
-    
-    # Create new venv
-    python3 -m venv "$VENV_DIR"
-    source "$VENV_DIR/bin/activate"
-    
-    # Upgrade pip
-    pip install --upgrade pip setuptools wheel
-    
-    # Install requirements
-    log_info "Installing MediaPipe and OpenCV..."
-    pip install mediapipe opencv-python
-    
-    # Create .pth file for bundled python to find packages
-    cat > "${BUILD_DIR}/aerobeat.pth" << 'EOF'
-import sys
-import os
-bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(bundle_dir, 'sidecar', 'python', 'site-packages'))
-EOF
-    
-    log_success "Virtual environment created"
-else
-    log_info "Skipping venv creation (--skip-venv)"
-    VENV_DIR="${BUILD_DIR}/.venv"
-    source "$VENV_DIR/bin/activate"
+mkdir -p "${BUNDLE_DIR}/addons/aerobeat-input-mediapipe"
+cp "${BUILD_DIR}/${EXPORT_NAME}" "${BUNDLE_DIR}/"
+chmod +x "${BUNDLE_DIR}/${EXPORT_NAME}"
+if [ -f "${EXPORT_PCK}" ]; then
+    cp "${EXPORT_PCK}" "${BUNDLE_DIR}/"
 fi
-
-# Step 2: Export Godot project
-if [ "$SKIP_EXPORT" = false ]; then
-    log_info "Exporting Godot project for Linux..."
-    cd "$PROJECT_ROOT"
-    
-    # Create export preset if it doesn't exist
-    if ! godot --headless --export-release "Linux/X11" "${BUILD_DIR}/AeroBeat.x86_64" 2>&1; then
-        log_warn "Export preset not found or export failed. Creating preset..."
-        
-        # Check if export_presets.cfg exists
-        if [ ! -f "${PROJECT_ROOT}/export_presets.cfg" ]; then
-            cat > "${PROJECT_ROOT}/export_presets.cfg" << 'EOF'
-[preset.0]
-
-name="Linux/X11"
-platform="Linux/X11"
-features=PackedStringArray("4.6", "Forward Plus")
-
-[preset.0.options]
-export/distribution/include_debug_symbols=false
-export/distribution/embargo=false
-export/distribution/export_console_wrapper=false
-texture_format/s3tc=true
-texture_format/etc=true
-texture_format/etc2=false
-binary_format/architecture="x86_64"
-EOF
-        fi
-        
-        # Try export again
-        godot --headless --export-release "Linux/X11" "${BUILD_DIR}/AeroBeat.x86_64" || {
-            log_error "Godot export failed. Please check your export settings."
-            exit 1
-        }
-    fi
-    
-    log_success "Godot export complete"
-else
-    log_info "Skipping Godot export (--skip-export)"
-fi
-
-# Step 3: Copy Python environment to bundle
-log_info "Copying Python environment..."
-
-# Copy Python binary and required libraries
-PYTHON_VERSION=$(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2)
-VENV_PYTHON_DIR="$VENV_DIR/lib/python${PYTHON_VERSION}"
-
-# Copy entire site-packages
-cp -r "${VENV_DIR}/lib/python${PYTHON_VERSION}/site-packages"/* "${BUNDLE_DIR}/sidecar/python/" 2>/dev/null || true
-
-# Copy Python interpreter and libraries
-mkdir -p "${BUNDLE_DIR}/sidecar/bin"
-cp "${VENV_DIR}/bin/python"* "${BUNDLE_DIR}/sidecar/bin/" 2>/dev/null || cp "${VENV_DIR}/bin/python3" "${BUNDLE_DIR}/sidecar/bin/" 2>/dev/null || true
-
-# Copy python standard library (minimal)
-log_info "Copying Python standard library..."
-mkdir -p "${BUNDLE_DIR}/sidecar/lib"
-cp -r "${VENV_DIR}/lib/python${PYTHON_VERSION}" "${BUNDLE_DIR}/sidecar/lib/" 2>/dev/null || {
-    # Fallback: copy system Python lib
-    SYSTEM_PYTHON_LIB=$(python3 -c "import sys; print(sys.prefix)")
-    cp -r "${SYSTEM_PYTHON_LIB}/lib/python${PYTHON_VERSION}" "${BUNDLE_DIR}/sidecar/lib/" 2>/dev/null || log_warn "Could not copy standard library"
-}
-
-log_success "Python environment copied"
-
-# Step 4: Copy MediaPipe server files
-log_info "Copying MediaPipe server files..."
-
-cp "${ADDON_ROOT}/python_mediapipe/main.py" "${BUNDLE_DIR}/sidecar/mediapipe_server/"
-cp "${ADDON_ROOT}/python_mediapipe/args.py" "${BUNDLE_DIR}/sidecar/mediapipe_server/"
-
-# Copy mock server if it exists
-if [ -f "${ADDON_ROOT}/python_mediapipe/mock_server.py" ]; then
-    cp "${ADDON_ROOT}/python_mediapipe/mock_server.py" "${BUNDLE_DIR}/sidecar/mediapipe_server/"
-fi
-
-log_success "MediaPipe server files copied"
-
-# Step 5: Create model download helper script
-cat > "${BUNDLE_DIR}/download_models.sh" << 'SCRIPT'
-#!/bin/bash
-# download_models.sh - Download MediaPipe models
-# This script downloads the required MediaPipe models on first run
-
-echo "Downloading MediaPipe pose detection model..."
-
-MODEL_DIR="$(dirname "$0")/sidecar/models"
-mkdir -p "$MODEL_DIR"
-
-# MediaPipe models are automatically downloaded on first use by the mediapipe package
-# This script ensures they're pre-downloaded for offline use
-
-python3 << 'PYTHON'
-import mediapipe as mp
-import os
-
-# Trigger model download by initializing pose
-mp_pose = mp.solutions.pose
-pose = mp_pose.Pose()
-pose.close()
-
-print("Models downloaded successfully!")
-PYTHON
-
-echo "Models are ready."
-SCRIPT
-
-chmod +x "${BUNDLE_DIR}/download_models.sh"
-
-# Step 6: Copy launcher script
-cp "${PROJECT_ROOT}/build-scripts/templates/run.sh" "${BUNDLE_DIR}/run.sh"
-chmod +x "${BUNDLE_DIR}/run.sh"
-
-# Step 7: Copy Godot executable and resources
-log_info "Copying game files..."
-cp "${BUILD_DIR}/AeroBeat.x86_64" "${BUNDLE_DIR}/" 2>/dev/null || {
-    log_warn "Could not find Godot export. Place your export manually."
-    touch "${BUNDLE_DIR}/AeroBeat.x86_64"
-}
-
-# Copy any .pck files
-for pck in "${BUILD_DIR}"/*.pck; do
-    if [ -f "$pck" ]; then
-        cp "$pck" "${BUNDLE_DIR}/"
-    fi
-done
-
-# Copy project icon if available
 if [ -f "${PROJECT_ROOT}/icon.svg" ]; then
     cp "${PROJECT_ROOT}/icon.svg" "${BUNDLE_DIR}/"
 fi
+cp -a "${PYTHON_MEDIAPIPE_DIR}" "${BUNDLE_DIR}/addons/aerobeat-input-mediapipe/"
+find "${BUNDLE_DIR}/addons/aerobeat-input-mediapipe/python_mediapipe" -depth -type d -name '__pycache__' -exec rm -rf {} +
+find "${BUNDLE_DIR}/addons/aerobeat-input-mediapipe/python_mediapipe" -type f -name '*.pyc' -delete
+rm -f "${BUNDLE_DIR}/icon.svg.import"
 
-# Create README
-cat > "${BUNDLE_DIR}/README.txt" << 'EOF'
-AeroBeat - Air Drumming Game
-============================
+cat > "${BUNDLE_DIR}/run-proof.sh" <<'SCRIPT'
+#!/bin/bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+chmod +x ./AeroBeatAssemblyProof.x86_64
+exec ./AeroBeatAssemblyProof.x86_64 "$@"
+SCRIPT
+chmod +x "${BUNDLE_DIR}/run-proof.sh"
 
-Quick Start:
-1. Ensure you have a webcam connected
-2. Run: ./run.sh
-3. Allow camera access when prompted
+cat > "${BUNDLE_DIR}/README.txt" <<'EOF'
+AeroBeat Assembly MediaPipe Linux Proof Bundle
+=============================================
 
-Requirements:
-- Linux x86_64
-- Webcam (for hand tracking)
-- OpenGL 3.3 compatible GPU
+This temporary proof bundle boots into the duplicated MediaPipe validation scene
+via the export preset feature flag `mediapipe_proof`.
 
-Files:
-- run.sh              - Launch script (use this to start)
-- AeroBeat.x86_64     - Main game executable
-- sidecar/            - Python environment and MediaPipe
-- download_models.sh  - Pre-download models (optional)
+Files of interest:
+- AeroBeatAssemblyProof.x86_64  Godot export binary
+- AeroBeatAssemblyProof.pck     Exported project data (if not embedded)
+- run-proof.sh                  Convenience launcher
+- addons/aerobeat-input-mediapipe/python_mediapipe/
+                                Loose Python sidecar payload required by the proof
 
-For help, visit: https://github.com/aerobeat/aerobeat-assembly-community
+Runtime requirements and limitations:
+- Linux x86_64 only
+- Godot export templates for 4.6.2 must exist on the build host
+- The exported proof still depends on the prepared installed-addon runtime under
+  addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/
+- Webcam access is still required for the live preview path
+- This is a temporary proof artifact, not a polished end-user distribution
+
+Launch:
+  ./run-proof.sh
+
+Optional smoke run:
+  ./AeroBeatAssemblyProof.x86_64 --quit-after 300
 EOF
 
-log_success "Bundle assembly complete"
+(
+    cd "${DIST_DIR}"
+    tar -czf "${BUNDLE_NAME}.tar.gz" "${BUNDLE_NAME}"
+) >"${BUNDLE_LOG}" 2>&1
 
-# Step 8: Create tarball
-log_info "Creating distribution archive..."
-cd "$DIST_DIR"
-tar -czf "${BUNDLE_NAME}.tar.gz" "$BUNDLE_NAME"
-
-BUNDLE_SIZE=$(du -h "${BUNDLE_NAME}.tar.gz" | cut -f1)
-log_success "Bundle created: ${BUNDLE_NAME}.tar.gz (${BUNDLE_SIZE})"
-
-# Summary
-echo ""
-echo "========================================"
-echo "  Build Complete!"
-echo "========================================"
-echo ""
-echo "Bundle location:"
-echo "  ${DIST_DIR}/${BUNDLE_NAME}.tar.gz"
-echo ""
-echo "To test the bundle:"
-echo "  cd ${BUNDLE_DIR}"
-echo "  ./run.sh"
-echo ""
-echo "To distribute:"
-echo "  Upload ${BUNDLE_NAME}.tar.gz"
-echo ""
+log_success "Bundle ready at ${BUNDLE_DIR}"
+log_success "Archive ready at ${DIST_DIR}/${BUNDLE_NAME}.tar.gz"

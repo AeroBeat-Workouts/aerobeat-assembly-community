@@ -280,6 +280,18 @@ func _kill_existing_servers() -> void:
 		OS.execute("pkill", ["-f", "python_mediapipe/main.py"], output, false)
 		await get_tree().create_timer(0.5).timeout
 
+func _absolute_runtime_path(path: String) -> String:
+	if path.is_empty() or path.is_absolute_path():
+		return path
+	if path.begins_with("res://") or path.begins_with("user://"):
+		var globalized := ProjectSettings.globalize_path(path)
+		if globalized.is_absolute_path():
+			return globalized
+		path = globalized
+	if OS.has_feature("template") and not OS.has_feature("editor"):
+		return OS.get_executable_path().get_base_dir().path_join(path)
+	return path
+
 func _build_linux_prelaunch_commands() -> PackedStringArray:
 	return PackedStringArray([
 		"export DISPLAY=:1",
@@ -296,9 +308,9 @@ func _get_server_log_path() -> String:
 func _start_detached_server() -> int:
 	await _kill_existing_servers()
 
-	var python: String = _find_python()
-	var script: String = ProjectSettings.globalize_path(_resolve_package_path("python_mediapipe/main.py"))
-	var project_dir: String = ProjectSettings.globalize_path(DesktopSidecarRuntime.get_package_root(ADDON_AUTOSTART_SCRIPT_PATH))
+	var python: String = _absolute_runtime_path(_find_python())
+	var script: String = _absolute_runtime_path(ProjectSettings.globalize_path(_resolve_package_path("python_mediapipe/main.py")))
+	var project_dir: String = _absolute_runtime_path(ProjectSettings.globalize_path(DesktopSidecarRuntime.get_package_root(ADDON_AUTOSTART_SCRIPT_PATH)))
 	var args := PackedStringArray([
 		"-u",
 		script,

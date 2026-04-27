@@ -1,0 +1,16 @@
+{
+  "contract_version": "unified-desktop-runtime-v1",
+  "create_venv": false,
+  "mode": "release",
+  "notes": [
+    "Prepared on host platform linux-x64."
+  ],
+  "platform_key": "linux-x64",
+  "runtime_env_dir": "/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv",
+  "runtime_root": "/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64",
+  "validation_errors": [],
+  "validation_status": "scaffolded",
+  "warnings": [
+    "Python dependency installation is not part of this foundation pass unless --create-venv is requested."
+  ]
+}
