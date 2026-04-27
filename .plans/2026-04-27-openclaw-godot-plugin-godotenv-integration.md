@@ -125,13 +125,39 @@ Important truthful caveat for audit: the current host-side gateway extension on 
 
 ---
 
-### Task 4: Audit the final assembly-side integration slice
+### Task 4: Live desktop verification of the assembly editor plugin state
+
+**Bead ID:** `oc-5ep`  
+**SubAgent:** `primary`  
+**Role:** `primary`  
+**References:** `REF-02`, `REF-04`, `REF-05`, `REF-06`  
+**Prompt:** Open the live `aerobeat-assembly-community` project in the real Godot editor, use desktop-control to inspect whether the OpenClaw plugin is visibly enabled and whether any connection/runtime errors appear in the editor, and if needed enable the plugin through the editor UI. Capture the strongest truthful evidence available from the live editor session and document any remaining bugs or manual follow-up.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+- `.qa-logs/`
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-04-27-openclaw-godot-plugin-godotenv-integration.md`
+- desktop verification evidence under `.qa-logs/`
+
+**Status:** ✅ Complete
+
+**Results:** Live desktop verification completed against the real Godot editor on the GNOME Wayland desktop after the host-side route fix/restart. Desktop-control preflight confirmed the host is GNOME Wayland (`XDG_SESSION_TYPE=wayland`, single monitor `DP-3`, `gnome-screenshot` available) and that the canonical blind-click helper is currently unavailable to rebuild because `freerdp3` dev packages are missing, so this pass used the screenshot-first path and avoided unnecessary blind clicks. A first launch without `--editor` surfaced the game window `AeroBeat Assembly (DEBUG)` instead of the editor (`.qa-logs/oc-5ep-editor-open-1.png`), which was corrected by relaunching explicitly with `~/.local/bin/godot --editor --path .`. The follow-up desktop screenshot (`.qa-logs/oc-5ep-editor-open-2.png`) shows the real editor open on `main.tscn` with the `openclaw` addon visible in the FileSystem tree.
+
+Most importantly, the live editor now auto-registers with OpenClaw without any manual plugin toggle. `godot_sessions` reports one connected session: project `AeroBeat Assembly`, version `4.6.2-stable (official)`, platform `GodotEditor`, tools `30`. Direct tool-side validation against that live session succeeded: `editor.getState` returned edited scene `res://scenes/main.tscn` with `isPlaying=false`; `scene.getCurrent` returned current scene `Main` at `res://scenes/main.tscn`; and `debug.tree` returned the expected live tree (`Main`, `InputManager`, `UI`, `TrackingStatus`, `DebugInfo`). That is stronger evidence than just the desktop screenshot: the editor-side OpenClaw plugin is not merely enabled in project state, it is actually connected and serving live tool traffic from the running assembly editor.
+
+Truthful bug/status outcome: no additional in-editor enablement bug remained after the host-side fix. The live editor connected successfully on first explicit editor launch, so the old manual follow-up caveat from the host-fix audit is now resolved for this assembly project. The only remaining non-blocking desktop-control note is infrastructure-level: the canonical blind click helper could not be rebuilt on this host because `freerdp3` pkg-config support is absent, but that did not block this verification pass because screenshot + tool-session validation was sufficient.
+
+---
+
+### Task 5: Audit the final assembly-side integration slice
 
 **Bead ID:** `oc-ddd`  
 **SubAgent:** `primary`  
 **Role:** `auditor`  
 **References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`, `REF-05`, `REF-06`  
-**Prompt:** Audit whether the assembly repo now truthfully has the OpenClaw Godot plugin integrated via GodotEnv, installed under the correct addon path, enabled in the project, and pointed at the OpenClaw-side connection model rather than a made-up local shortcut. Close only if the evidence supports that exact slice.
+**Prompt:** Audit whether the assembly repo now truthfully has the OpenClaw Godot plugin integrated via GodotEnv, installed under the correct addon path, enabled in the project, pointed at the OpenClaw-side connection model rather than a made-up local shortcut, and desktop-verified in a live editor session or left with a clearly bounded remaining editor-only caveat. Close only if the evidence supports that exact slice.
 
 **Folders Created/Deleted/Modified:**
 - `.plans/`
@@ -139,25 +165,36 @@ Important truthful caveat for audit: the current host-side gateway extension on 
 **Files Created/Deleted/Modified:**
 - `.plans/2026-04-27-openclaw-godot-plugin-godotenv-integration.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Audit complete. The evidence supports closing this slice as done.
+
+Assembly-side integration truth check against the requested slice:
+- **Integrated via GodotEnv (`REF-01`, `REF-04`)**: `addons.jsonc` now declares `openclaw` with `url = git@github.com:TomLeeLive/openclaw-godot-plugin.git`, `checkout = main`, and `subfolder = /addons/openclaw`, which is the truthful upstream subtree needed to materialize only the Godot addon.
+- **Installed under the correct addon path (`REF-04`)**: the repo now has `addons/openclaw/plugin.cfg`, `addons/openclaw/openclaw_plugin.gd`, and `addons/openclaw/connection_manager.gd`, matching the expected `res://addons/openclaw/` layout instead of mounting the upstream repo root.
+- **Enabled in the project (`REF-02`, `REF-04`)**: `project.godot` records `res://addons/openclaw/plugin.cfg` in `[editor_plugins] enabled=PackedStringArray(...)`, which is the persisted Godot editor enablement state for this project.
+- **Pointed at the OpenClaw-side connection model (`REF-05`, `REF-06`)**: the installed addon targets `http://localhost:18789` and `/godot/*` routes in both `openclaw_plugin.gd` and `connection_manager.gd`, which aligns with the host-side OpenClaw gateway extension model instead of an assembly-local transport.
+- **Desktop-verified in a live editor session**: `.qa-logs/oc-5ep-editor-open-2.png` shows the real Godot editor open on the assembly project with the `openclaw` addon present in the FileSystem tree, and the stronger proof is live tool connectivity: `godot_sessions` reports one connected `AeroBeat Assembly` `GodotEditor` session with 30 tools, while `editor.getState`, `scene.getCurrent`, and `debug.tree` all succeeded against that live editor session.
+
+Exact caveat, not blocking closure: the generated `addons/openclaw/` tree currently includes upstream `.git` metadata in addition to addon files. That packaging detail does not invalidate this bead’s requested slice because the addon path, enablement, connection model, and live editor verification are all correct, but it may be worth a separate cleanup follow-up if the team wants stricter generated-addon hygiene.
+
+Audit verdict: pass. The earlier host-extension incompatibility caveat documented in Task 3 is superseded by Task 4’s live-session proof after the host-side fix/restart; the assembly project now truthfully demonstrates the intended OpenClaw integration end to end.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** The assembly repo now carries the OpenClaw Godot plugin as a GodotEnv-managed addon at `res://addons/openclaw/`, has it enabled in `project.godot`, points it at the OpenClaw gateway `/godot/*` connection model on `http://localhost:18789`, and has been verified in a real Godot editor session that successfully exposed the plugin’s 30-tool surface to OpenClaw.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-01` and `REF-04` are satisfied by the exact GodotEnv manifest + mounted addon subtree; `REF-02` is satisfied by persisted plugin enablement in `project.godot`; `REF-05` and `REF-06` are satisfied by the addon’s gateway route usage and the live connected editor session using the OpenClaw-side tool bridge. `REF-03` remained contextual only; no deviation was needed.
 
 **Commits:**
-- Pending.
+- Pending audit-doc commit in this task; no implementation change was required beyond updating this plan with the final audit record.
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** For this integration, install-path truth, enablement truth, and connection truth had to be checked separately. Headless import evidence was useful, but the decisive proof was a live editor session visible on desktop and simultaneously reachable through `godot_sessions`/tool calls.
 
 ---
 
-*Completed on Pending*
+*Completed on 2026-04-27*
