@@ -1,0 +1,23 @@
+[0;34m[INFO][0m Checking prerequisites...
+[0;34m[INFO][0m Rewriting the prepared Linux runtime manifest to release mode...
+{
+  "contract_version": "unified-desktop-runtime-v1",
+  "create_venv": false,
+  "mode": "release",
+  "notes": [
+    "Prepared on host platform linux-x64."
+  ],
+  "platform_key": "linux-x64",
+  "runtime_env_dir": "/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv",
+  "runtime_root": "/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64",
+  "validation_errors": [],
+  "validation_status": "scaffolded",
+  "warnings": [
+    "Python dependency installation is not part of this foundation pass unless --create-venv is requested."
+  ]
+}
+[0;34m[INFO][0m Exporting Godot project with preset 'Linux Proof'...
+[0;32m[SUCCESS][0m Export finished
+[0;34m[INFO][0m Assembling proof bundle...
+[0;32m[SUCCESS][0m Bundle ready at /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/dist/AeroBeatAssemblyProof-Linux
+[0;32m[SUCCESS][0m Archive ready at /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/dist/AeroBeatAssemblyProof-Linux.tar.gz

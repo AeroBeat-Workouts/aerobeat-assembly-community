@@ -1,0 +1,63 @@
+Fresh QA export + live window inspection for oc-1w7
+Date: 2026-04-27
+Repo: /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community
+Artifact: dist/AeroBeatAssemblyProof-Linux/
+
+1) Fresh export rebuild
+- Command: ./build-scripts/build-linux-bundle.sh
+- Result: success
+- Log: .qa-logs/oc-1w7-build-linux-bundle.log
+
+2) Live exported app launch
+- Command: dist/AeroBeatAssemblyProof-Linux/run-proof.sh
+- Screenshot: .qa-logs/oc-1w7-desktop.png
+- Observation: exported app opened as a normal window with AeroBeat in the title bar and the MediaPipe proof scene visible, including live camera preview text/surface.
+
+3) Window/taskbar identity surfaces
+- Command: wmctrl -lx
+- Result: 0x00c00006  0 Godot_Engine.AeroBeat  N/A AeroBeat
+
+- Command: xprop -id 0x00c00006 WM_CLASS WM_NAME _NET_WM_WINDOW_TYPE _NET_WM_STATE WM_NORMAL_HINTS
+- Result:
+  WM_CLASS(STRING) = "Godot_Engine", "AeroBeat"
+  WM_NAME(STRING) = "AeroBeat"
+  _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NORMAL
+  _NET_WM_STATE(ATOM) = _NET_WM_STATE_FOCUSED
+  WM_NORMAL_HINTS(WM_SIZE_HINTS):
+          program specified location: 384, 190
+          program specified size: 1152 by 648
+          program specified minimum size: 64 by 64
+          program specified maximum size: 16384 by 16384
+          window gravity: Static
+
+- Command: wmctrl -lGx
+- Result: 0x00c00006  0 431  263  1152 648  Godot_Engine.AeroBeat  N/A AeroBeat
+
+- Command: xwininfo -id 0x00c00006
+- Result highlights:
+  Window id: 0xc00006 "AeroBeat"
+  Width: 1152
+  Height: 648
+  Override Redirect State: no
+  Map State: IsViewable
+  -geometry 1152x648+384+190
+
+4) Fresh exported proof-path smoke validation
+- Command: dist/AeroBeatAssemblyProof-Linux/AeroBeatAssemblyProof.x86_64 --quit-after 300
+- Result: exit 0
+- Log: .qa-logs/oc-1w7-smoke.log
+- Key lines:
+  AeroBeat started
+  Mediapipe proof export feature detected; launching proof scene
+  [CameraView] Stream started successfully
+
+QA conclusion
+- PASS: fresh export rebuilt successfully.
+- PASS: exported app remains windowed (1152x648), not fullscreen.
+- PASS: exported window presents as a normal desktop window (_NET_WM_WINDOW_TYPE_NORMAL, no skip-taskbar state observed).
+- PASS: title/class identity is cleaner: title AeroBeat, second WM_CLASS string AeroBeat, wmctrl class suffix AeroBeat.
+- PASS: MediaPipe proof path still launches truthfully on the exported artifact.
+
+Remaining caveats
+- The first WM_CLASS string remains engine-owned: "Godot_Engine".
+- QA verified live exported window/title/class surfaces and proof-scene launch; it did not independently validate installed desktop-entry launching semantics beyond the emitted bundle-local AeroBeat.desktop artifact.

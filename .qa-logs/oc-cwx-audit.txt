@@ -1,0 +1,50 @@
+Audit: oc-cwx
+Date: 2026-04-27
+Repo: /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community
+Plan: .plans/2026-04-27-assembly-linux-windowed-desktop-identity.md
+
+Audit scope
+- Verify closure claim for Linux desktop-identity cleanup after fresh export QA.
+- Check the plan reflects the real root cause and the exact remaining caveats.
+
+Evidence reviewed
+- Commit 2dc1ed6 (`Clean up Linux proof desktop identity`)
+- `.qa-logs/oc-t29-identity-evidence.txt`
+- `.qa-logs/oc-1w7-build-linux-bundle.log`
+- `.qa-logs/oc-1w7-window-inspection.txt`
+- `.qa-logs/oc-1w7-smoke.log`
+- `dist/AeroBeatAssemblyProof-Linux/AeroBeat.desktop`
+- `.plans/2026-04-27-assembly-linux-windowed-desktop-identity.md`
+
+Audit findings
+1. Root cause is accurately reconstructed.
+   - Research/plan evidence shows the earlier utility + skip-taskbar behavior came from editor/debug-run or lingering Godot child/play windows, not the exported Linux proof app itself.
+   - Fresh exported-app inspection in Task 1 and Task 3 shows `_NET_WM_WINDOW_TYPE_NORMAL` and no skip-taskbar state for the export.
+
+2. Exported app now presents like a normal AeroBeat desktop app within repo-owned surfaces.
+   - Live QA evidence shows:
+     - `WM_NAME = "AeroBeat"`
+     - `WM_CLASS = "Godot_Engine", "AeroBeat"`
+     - `_NET_WM_WINDOW_TYPE_NORMAL`
+     - visible 1152x648 window with `Override Redirect State: no`
+   - Bundle-local desktop file exists and truthfully declares:
+     - `Name=AeroBeat`
+     - `StartupWMClass=AeroBeat`
+     - `Exec=AeroBeatAssemblyProof.x86_64`
+
+3. Windowed behavior remains intact.
+   - QA captured a live 1152x648 exported window and explicitly recorded that the app remained windowed, not fullscreen.
+
+4. MediaPipe proof path still runs truthfully after fresh export.
+   - Fresh smoke log exits 0 and records:
+     - `AeroBeat started`
+     - `Mediapipe proof export feature detected; launching proof scene`
+     - `[CameraView] Stream started successfully`
+
+Exact caveats / completion boundary
+- Caveat 1: the first `WM_CLASS` string remains engine-owned as `Godot_Engine`; this repo only controls the project-owned name/title/class surfaces and launcher metadata.
+- Caveat 2: QA verified the emitted bundle-local `AeroBeat.desktop` artifact and live exported window behavior, but did not independently certify semantics of installing that desktop entry into the host desktop environment.
+- Completion boundary: this slice is complete for repo-owned Linux proof desktop identity cleanup. It does not include engine-level WM_CLASS prefix rebranding or a separate installed-launcher integration certification pass.
+
+Audit verdict
+- PASS. Evidence supports closure of bead `oc-cwx`.

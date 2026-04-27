@@ -1,7 +1,7 @@
 # AeroBeat Assembly Linux Desktop Identity Cleanup
 
 **Date:** 2026-04-27  
-**Status:** In Progress  
+**Status:** Complete  
 **Agent:** Pico 🐱‍🏍
 
 ---
@@ -14,9 +14,9 @@ Keep the Linux proof app windowed, but make it present like a normal desktop app
 
 ## Overview
 
-The current proof/export work is functionally correct, but the live window Derrick saw is presenting like a Godot debug/utility child window instead of a normal desktop app. On this host, the observed proof window was tagged with `_NET_WM_WINDOW_TYPE_UTILITY` and `_NET_WM_STATE_SKIP_TASKBAR`, which explains why it did not appear in the Zorin taskbar like a normal app.
+The root cause turned out to be narrower than the original symptom suggested. The exported Linux proof app was already presenting as a normal desktop window; the earlier `_NET_WM_WINDOW_TYPE_UTILITY` and `_NET_WM_STATE_SKIP_TASKBAR` evidence came from editor/debug-run behavior or a lingering Godot child/play window, not from the exported build itself.
 
-This follow-up slice should stay narrow: fix the exported/windowed app identity without regressing the MediaPipe proof path. That means we need to identify whether the bad identity is coming from editor/debug launch behavior, export metadata, project settings, runtime window-title code, or Linux desktop integration details — then rebuild a fresh export and verify taskbar presence, title/class quality, and proof-scene behavior.
+This slice therefore stayed narrow and truthful: keep the exported app windowed, clean up only the repo-owned desktop identity surfaces (`AeroBeat` project name/title/class + emitted `.desktop` metadata), and then rebuild a fresh export to verify normal-window behavior, cleaner taskbar/window identity, and intact MediaPipe proof-scene launch behavior.
 
 ---
 
@@ -103,12 +103,19 @@ Exact evidence captured for this coder pass: `.qa-logs/oc-t29-export.log` record
 - build/output folders as needed
 
 **Files Created/Deleted/Modified:**
-- fresh QA/export evidence under `.qa-logs/`
+- `.qa-logs/oc-1w7-build-linux-bundle.log`
+- `.qa-logs/oc-1w7-desktop.png`
+- `.qa-logs/oc-1w7-smoke.log`
+- `.qa-logs/oc-1w7-window-inspection.txt`
 - `.plans/2026-04-27-assembly-linux-windowed-desktop-identity.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Completed on 2026-04-27. I rebuilt the Linux proof bundle fresh with `./build-scripts/build-linux-bundle.sh`, producing a new `dist/AeroBeatAssemblyProof-Linux/` artifact and recording the successful export/bundle pass in `.qa-logs/oc-1w7-build-linux-bundle.log`. I then launched the exported app itself via `dist/AeroBeatAssemblyProof-Linux/run-proof.sh`, captured a host-local desktop screenshot at `.qa-logs/oc-1w7-desktop.png`, and inspected the live window with `wmctrl`, `xprop`, and `xwininfo` as recorded in `.qa-logs/oc-1w7-window-inspection.txt`.
+
+Fresh exported app findings: the proof app still opens windowed, not fullscreen, with `xwininfo` and `wmctrl -lGx` showing a live 1152x648 window and the screenshot showing the AeroBeat titlebar on the visible Zorin desktop. The exported window now presents as a normal desktop window: `xprop` reported `_NET_WM_WINDOW_TYPE_NORMAL`, `Override Redirect State: no`, and no skip-taskbar state. Identity cleanup also landed truthfully in the live exported surface: `wmctrl -lx` showed `Godot_Engine.AeroBeat`, `xprop` showed `WM_CLASS = "Godot_Engine", "AeroBeat"`, and `WM_NAME = "AeroBeat"`, so the title and project-owned class/name now read `AeroBeat` instead of `AeroBeat Assembly`.
+
+MediaPipe proof behavior also held on the fresh export. The live screenshot shows the duplicated proof scene with camera preview text/surface visible, and an independent exported smoke run via `dist/AeroBeatAssemblyProof-Linux/AeroBeatAssemblyProof.x86_64 --quit-after 300` exited 0 with QA log `.qa-logs/oc-1w7-smoke.log`, including `AeroBeat started`, `Mediapipe proof export feature detected; launching proof scene`, and `[CameraView] Stream started successfully`. Remaining caveat: the first `WM_CLASS` string is still engine-owned as `Godot_Engine`; QA also verified live window/title/class behavior and proof-scene launch, but did not independently certify installed `.desktop` launcher semantics beyond the emitted bundle-local `AeroBeat.desktop` artifact.
 
 ---
 
@@ -126,27 +133,30 @@ Exact evidence captured for this coder pass: `.qa-logs/oc-t29-export.log` record
 
 **Files Created/Deleted/Modified:**
 - `.plans/2026-04-27-assembly-linux-windowed-desktop-identity.md`
-- final audit evidence under `.qa-logs/`
+- `.qa-logs/oc-cwx-audit.txt`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Completed on 2026-04-27. I audited the implementation commit `2dc1ed6` plus the fresh QA export evidence and recorded the closure review in `.qa-logs/oc-cwx-audit.txt`. The evidence supports the core claim: after a fresh export, the proof app still opens windowed (`1152x648`), presents as a normal desktop window (`_NET_WM_WINDOW_TYPE_NORMAL`, `Override Redirect State: no`, no skip-taskbar state), and truthfully launches the MediaPipe proof path (`AeroBeat started`, `Mediapipe proof export feature detected; launching proof scene`, `[CameraView] Stream started successfully`).
+
+I also verified that the plan now reflects the real root cause and completion boundary. The earlier utility/skip-taskbar behavior belonged to editor/debug-run or lingering Godot child/play windows, not the exported app; the repo-owned cleanup correctly narrowed to project name/title/class surfaces plus the emitted bundle-local `.desktop` metadata. Closure is truthful with two explicit caveats preserved: the first `WM_CLASS` string remains engine-owned as `Godot_Engine`, and QA did not independently certify installed desktop-entry semantics beyond the emitted bundle-local `AeroBeat.desktop` artifact. Verified against `REF-02`, `REF-03`, and `REF-04`; no deviation found that blocks closure.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** We closed the Linux proof desktop-identity cleanup with a truthful scope boundary. The exported AeroBeat proof app remains windowed, now presents with cleaner project-owned desktop identity (`WM_NAME = AeroBeat`, second `WM_CLASS` string `AeroBeat`, bundle-local `AeroBeat.desktop` with `Name=AeroBeat` / `StartupWMClass=AeroBeat`), and still launches the MediaPipe proof scene after a fresh export. The audit also corrected the original diagnosis: the earlier utility/skip-taskbar behavior came from editor/debug windows, not the exported Linux proof app.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-02`, `REF-03`, and `REF-04` are satisfied. The exported app and emitted launcher metadata match the repo-owned cleanup target, and the final plan accurately records the root cause and caveats. Deliberate remaining caveats: engine-owned first `WM_CLASS` string stays `Godot_Engine`, and installed desktop-entry semantics were not separately certified beyond the emitted bundle-local launcher artifact.
 
 **Commits:**
-- Pending.
+- `2dc1ed6` - Clean up Linux proof desktop identity
+- `12e40f6` - Audit Linux proof desktop identity closure
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** When Linux desktop identity looks wrong in Godot proof work, separate editor/debug-run windows from the exported artifact before changing project settings. For this repo, the truthful fix lived in project naming and emitted launcher metadata, not in fullscreen/window-mode behavior or any repo-owned utility-window flag.
 
 ---
 
-*Completed on Pending*
+*Completed on 2026-04-27*
