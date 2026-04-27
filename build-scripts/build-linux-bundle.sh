@@ -127,12 +127,31 @@ exec ./AeroBeatAssemblyProof.x86_64 "$@"
 SCRIPT
 chmod +x "${BUNDLE_DIR}/run-proof.sh"
 
+cat > "${BUNDLE_DIR}/AeroBeat.desktop" <<'EOF'
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=AeroBeat
+Comment=AeroBeat MediaPipe Linux proof build
+Exec=AeroBeatAssemblyProof.x86_64
+Icon=icon.svg
+Terminal=false
+Categories=Game;
+StartupNotify=true
+StartupWMClass=AeroBeat
+EOF
+chmod +x "${BUNDLE_DIR}/AeroBeat.desktop"
+
 cat > "${BUNDLE_DIR}/README.txt" <<'EOF'
-AeroBeat Assembly MediaPipe Linux Proof Bundle
-=============================================
+AeroBeat MediaPipe Linux Proof Bundle
+====================================
 
 This temporary proof bundle boots into the duplicated MediaPipe validation scene
 via the export preset feature flag `mediapipe_proof`.
+
+Desktop integration:
+- AeroBeat.desktop              Linux launcher with Name=AeroBeat
+- StartupWMClass=AeroBeat       Matches the exported project window class/title
 
 Files of interest:
 - AeroBeatAssemblyProof.x86_64  Godot export binary
@@ -148,6 +167,7 @@ Runtime requirements and limitations:
   addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/
 - Webcam access is still required for the live preview path
 - This is a temporary proof artifact, not a polished end-user distribution
+- The first WM_CLASS string remains engine-owned (`Godot_Engine`)
 
 Launch:
   ./run-proof.sh

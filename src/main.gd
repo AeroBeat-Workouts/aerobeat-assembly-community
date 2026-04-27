@@ -1,5 +1,5 @@
 extends Node
-## Main entry point for AeroBeat Assembly
+## Main entry point for AeroBeat
 
 const MEDIAPIPE_INPUT_PROVIDER := preload("res://addons/aerobeat-input-mediapipe/src/input_provider.gd")
 const MEDIAPIPE_PROOF_SCENE_PATH := "res://scenes/mediapipe_test_scene.tscn"
@@ -19,7 +19,7 @@ var _latency_display: LatencyDisplay = null
 var _mediapipe_provider: AeroInputProvider = null
 
 func _ready() -> void:
-    print("AeroBeat Assembly started")
+    print("AeroBeat started")
     print("Godot version: ", Engine.get_version_info())
 
     if OS.has_feature("mediapipe_proof"):
