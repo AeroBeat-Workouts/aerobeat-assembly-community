@@ -1,0 +1,7 @@
+
+## openclaw addon connection refs
+addons/openclaw/openclaw_plugin.gd:27:var gateway_url: String = "http://localhost:18789"
+addons/openclaw/openclaw_plugin.gd:97:		gateway_url = config.get_value("gateway", "url", "http://localhost:18789")
+addons/openclaw/connection_manager.gd:8:const GATEWAY_URL = "http://localhost:18789"
+addons/openclaw/mcp_bridge.gd:27:	var err = _server.listen(_port, "127.0.0.1")
+addons/openclaw/mcp_bridge.gd:34:	print("[OpenClaw MCP Bridge] Server started on http://127.0.0.1:%d" % _port)

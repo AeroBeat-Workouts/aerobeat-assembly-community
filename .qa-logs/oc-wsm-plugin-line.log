@@ -1,0 +1,3 @@
+
+## project plugin line
+33:enabled=PackedStringArray("res://addons/aerobeat-input-core/plugin.cfg", "res://addons/gut/plugin.cfg", "res://addons/openclaw/plugin.cfg")

@@ -1,7 +1,7 @@
 # AeroBeat Assembly OpenClaw Godot Plugin GodotEnv Integration
 
 **Date:** 2026-04-27  
-**Status:** Draft  
+**Status:** In Progress  
 **Agent:** Pico 🐱‍🏍
 
 ---
@@ -113,9 +113,15 @@ Truthful caveat for QA: the install/layout slice is complete, but activation is 
 - validation evidence as needed
 - `.plans/2026-04-27-openclaw-godot-plugin-godotenv-integration.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Enabled the installed OpenClaw plugin in the project’s recorded editor-plugin list by updating `project.godot` `[editor_plugins]` to include `"res://addons/openclaw/plugin.cfg"` alongside the pre-existing input-core and GUT plugins (`REF-02`). This matches the upstream activation model from `REF-04`: the README says to enable the plugin via `Project → Project Settings → Plugins → OpenClaw → Enable`, and for this repo the truthful persisted representation of that editor action is the `project.godot` enabled `PackedStringArray`. Exact persisted evidence: `project.godot:33` now reads `enabled=PackedStringArray("res://addons/aerobeat-input-core/plugin.cfg", "res://addons/gut/plugin.cfg", "res://addons/openclaw/plugin.cfg")` (`.qa-logs/oc-wsm-plugin-line.log`).
+
+Headless Godot verification confirms Godot accepted and initialized the plugin from the recorded project state. Running `~/.local/bin/godot --headless --path . --import --quit-after 1000 --verbose` exited `0` (`.qa-logs/oc-wsm-headless-import-exit.txt`). During plugin initialization, the log shows `Loading resource: res://addons/openclaw/openclaw_plugin.gd`, then `[OpenClaw] Plugin loading...`, `[OpenClaw] Plugin loaded!`, and on shutdown `Unloading addon: res://addons/openclaw/plugin.cfg` plus `[OpenClaw] Plugin unloading...` / `[OpenClaw] Plugin unloaded!` (`.qa-logs/oc-wsm-headless-import.log`). That is the best available non-interactive evidence on this machine that Godot recognizes the plugin enablement and loads the addon script from the expected `res://addons/openclaw/` path.
+
+Connection-path verification shows the project is using the OpenClaw-side model, not an assembly-local shortcut. The installed addon points its gateway connection at OpenClaw’s local gateway endpoint: `addons/openclaw/openclaw_plugin.gd` sets `gateway_url` default to `http://localhost:18789`, and `addons/openclaw/connection_manager.gd` hardcodes `const GATEWAY_URL = "http://localhost:18789"` (`.qa-logs/oc-wsm-connection-evidence.log`). The same `connection_manager.gd` uses the OpenClaw-specific HTTP route family `GATEWAY_URL + "/godot/register"`, `.../poll`, and `.../heartbeat` via `API_PREFIX = "/godot"`, which matches the installed host-side gateway extension under `~/.openclaw/extensions/godot/index.ts`: that extension is explicitly written to own `/godot/*` routes, including `register` and `poll`, and registers those routes with OpenClaw (`.qa-logs/oc-wsm-host-extension-evidence.log`, `REF-05`, `REF-06`). The addon also exposes the documented secondary local-development path through its MCP bridge by listening only on `127.0.0.1` (`addons/openclaw/mcp_bridge.gd`), which matches upstream’s documented hybrid architecture rather than inventing a separate project-only transport (`REF-04`).
+
+Important truthful caveat for audit: the current host-side gateway extension on this machine is installed but not actually loaded by the running OpenClaw build. `openclaw gateway status` shows the gateway itself is up on loopback `127.0.0.1:18789`, but the same probe reports the installed `godot` plugin failed to register because it still calls deprecated `api.registerHttpHandler(...)`, and `openclaw godot status` is unavailable as a result (`.qa-logs/oc-wsm-openclaw-status.log`; shell output captured during validation). This matches the headless Godot log, where the enabled plugin attempts to connect and reports `[OpenClaw] Register failed: 0, 404` because the `/godot/*` route is not active in the gateway right now (`.qa-logs/oc-wsm-headless-import.log`). So this QA slice verifies truthful enablement plus the intended OpenClaw-side connection path, but a live interactive Godot editor session reaching successful `[OpenClaw] Connected` still requires a separate host-side extension compatibility fix outside this bead’s scope.
 
 ---
 

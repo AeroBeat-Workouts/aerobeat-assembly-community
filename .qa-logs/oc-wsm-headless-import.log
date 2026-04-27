@@ -1,0 +1,177 @@
+WorkerThreadPool: 16 threads, 12 max low-priority.
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+Unrecognized output string "misc2" in mapping:
+030000008a2e0000dd10000011010000,Hand Held Legend GC Ultimate,a:b0,b:b2,back:b17,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,guide:b18,leftshoulder:b10,leftstick:b8,lefttrigger:a3,leftx:a0,lefty:a1,misc1:b19,misc2:b24,paddle1:b13,paddle2:b12,rightshoulder:b11,rightstick:b9,righttrigger:a4,rightx:a2,righty:a5,start:b16,x:b1,y:b3,platform:Linux,
+Unrecognized output string "misc2" in mapping:
+030000000d0f0000ab01000011010000,Horipad Steam,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b13,lefttrigger:a5,leftx:a0,lefty:a1,misc2:b2,paddle1:b19,paddle2:b18,paddle3:b15,paddle4:b5,rightshoulder:b7,rightstick:b14,righttrigger:a4,rightx:a2,righty:a3,start:b11,x:b3,y:b4,platform:Linux,
+Unrecognized output string "misc2" in mapping:
+050000000d0f00009601000091000000,Horipad Steam,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b13,lefttrigger:a5,leftx:a0,lefty:a1,misc2:b2,paddle1:b19,paddle2:b18,paddle3:b15,paddle4:b5,rightshoulder:b7,rightstick:b14,righttrigger:a4,rightx:a2,righty:a3,start:b11,x:b3,y:b4,platform:Linux,
+Unrecognized output string "misc2" in mapping:
+030000007e0500006920000011010000,Nintendo Switch 2 Pro Controller,a:b0,b:b1,back:b14,dpdown:b8,dpleft:b10,dpright:b9,dpup:b11,guide:b16,leftshoulder:b12,leftstick:b15,lefttrigger:b13,leftx:a0,lefty:a1~,misc1:b17,misc2:b20,paddle1:b18,paddle2:b19,rightshoulder:b4,rightstick:b7,righttrigger:b5,rightx:a2,righty:a3~,start:b6,x:b2,y:b3,platform:Linux,
+SDL: Gamepad Lenovo Legion Controller for Windows connected
+SDL: Init OK!
+Using "default" pen tablet driver...
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CORE API HASH: 4039755037
+EDITOR API HASH: 223528947
+SceneTreeFTI: traversal method DEFAULT
+Loading resource: /home/derrick/.config/godot/editor_settings-4.6.tres
+EditorSettings: Load OK!
+EditorTheme: Generating new theme for the config '3810048042'.
+EditorTheme: Generating new icons.
+EditorTheme: Generating new fonts.
+EditorTheme: Generating new styles.
+Loading resource: /home/derrick/.cache/godot/editor_doc_cache-4.6.res
+Loaded system CA certificates
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+Loading resource: res://addons/aerobeat-input-core/plugin.gd
+Loading resource: res://addons/gut/gut_plugin.gd
+Loading resource: res://addons/gut/gui/GutBottomPanel.tscn
+Loading resource: res://addons/gut/gui/GutBottomPanel.gd
+Loading resource: res://addons/gut/GutScene.tscn
+Loading resource: res://addons/gut/GutScene.gd
+Loading resource: res://addons/gut/gui/NormalGui.tscn
+Loading resource: res://addons/gut/gui/GutSceneTheme.tres
+Loading resource: res://addons/gut/fonts/AnonymousPro-Regular.ttf
+Loading resource: res://.godot/imported/AnonymousPro-Regular.ttf-856c843fd6f89964d2ca8d8ff1724f13.fontdata
+Loading resource: res://addons/gut/gui/gut_gui.gd
+Loading resource: res://addons/gut/fonts/CourierPrime-Regular.ttf
+Loading resource: res://.godot/imported/CourierPrime-Regular.ttf-3babe7e4a7a588dfc9a84c14b4f1fe23.fontdata
+Loading resource: res://addons/gut/gui/ResizeHandle.tscn
+Loading resource: res://addons/gut/gui/ResizeHandle.gd
+Loading resource: res://addons/gut/gui/MinGui.tscn
+Loading resource: res://addons/gut/lazy_loader.gd
+Loading resource: res://addons/gut/thing_counter.gd
+Loading resource: res://addons/gut/warnings_manager.gd
+Loading resource: res://addons/gut/version_numbers.gd
+Loading resource: res://addons/gut/gui/editor_globals.gd
+Loading resource: res://addons/gut/gui/gut_user_preferences.gd
+Loading resource: res://addons/gut/gui/RunExternally.tscn
+Loading resource: res://addons/gut/gui/RunExternally.gd
+Loading resource: res://addons/gut/gut_fonts.gd
+Loading resource: res://addons/gut/dynamic_gdscript.gd
+Loading resource: res://addons/gut/gui/RunAtCursor.tscn
+Loading resource: res://addons/gut/gui/RunAtCursor.gd
+Loading resource: res://addons/gut/gui/arrow.png
+Loading resource: res://.godot/imported/arrow.png-2b5b2d838b5b3467cf300ac2da1630d9.ctex
+Loading resource: res://addons/gut/gui/play.png
+Loading resource: res://.godot/imported/play.png-5c90e88e8136487a183a099d67a7de24.ctex
+Loading resource: res://addons/gut/icon.png
+Loading resource: res://.godot/imported/icon.png-91b084043b8aaf2f1c906e7b9fa92969.ctex
+Loading resource: res://addons/gut/gui/RunResults.tscn
+Loading resource: res://addons/gut/gui/RunResults.gd
+Loading resource: res://addons/gut/gui/ResultsTree.tscn
+Loading resource: res://addons/gut/gui/ResultsTree.gd
+Loading resource: res://addons/gut/images/HSplitContainer.svg
+Loading resource: res://.godot/imported/HSplitContainer.svg-81e594d94ee80e4176e099672ef6025b.editor.ctex
+Loading resource: res://addons/gut/gui/OutputText.tscn
+Loading resource: res://addons/gut/gui/OutputText.gd
+Loading resource: res://addons/gut/images/VSplitContainer.svg
+Loading resource: res://.godot/imported/VSplitContainer.svg-6cec29fefa7e65d6ff7c2fdb9a1bb9ab.editor.ctex
+Loading resource: res://addons/gut/gui/ShortcutDialog.tscn
+Loading resource: res://addons/gut/gui/ShortcutDialog.gd
+Loading resource: res://addons/gut/gui/ShortcutButton.tscn
+Loading resource: res://addons/gut/gui/ShortcutButton.gd
+Loading resource: res://addons/gut/gui/ShellOutOptions.tscn
+Loading resource: res://addons/gut/gui/ShellOutOptions.gd
+Loading resource: res://addons/gut/version_conversion.gd
+Loading resource: res://addons/gut/gut_menu.gd
+Loading resource: res://addons/gut/gui/gut_dock.gd
+Loading resource: res://addons/gut/gui/update_required.tscn
+Loading resource: res://addons/gut/gui/update_required.gd
+Loading resource: res://addons/gut/gui/check_for_update.tscn
+Loading resource: res://addons/gut/gui/check_for_update.gd
+Loading resource: res://addons/gut/update_detector.gd
+Loading resource: res://addons/gut/gui/gut_config_gui.gd
+Loading resource: res://addons/gut/gui/about.tscn
+Loading resource: res://addons/gut/gui/about.gd
+Loading resource: res://addons/gut/gui/GutLogo.tscn
+Loading resource: res://addons/gut/gui/gut_logo.gd
+Loading resource: res://addons/gut/images/GutIconV2_base.png
+Loading resource: res://.godot/imported/GutIconV2_base.png-7038b445a6dfa6ba4cec1a42fa81abae.ctex
+Loading resource: res://addons/gut/images/eyey.png
+Loading resource: res://.godot/imported/eyey.png-e0a721ab6b749f5d493d61e9f27f0654.ctex
+Loading resource: res://addons/gut/gut_config.gd
+Loading resource: res://addons/gut/logger.gd
+Loading resource: res://addons/gut/printers.gd
+Loading resource: res://addons/gut/editor_caret_context_notifier.gd
+Loading resource: res://addons/gut/images/red.png
+Loading resource: res://.godot/imported/red.png-47a557c3922e800f76686bc1a4ad0c3c.ctex
+Loading resource: res://addons/gut/images/green.png
+Loading resource: res://.godot/imported/green.png-e3a17091688e10a7013279b38edc7f8a.ctex
+Loading resource: res://addons/gut/images/yellow.png
+Loading resource: res://.godot/imported/yellow.png-b3cf3d463958a169d909273d3d742052.ctex
+Loading resource: res://addons/gut/gui/panel_controls.gd
+Loading resource: res://addons/gut/get_editor_interface.gd
+Loading resource: res://addons/gut/gui/EditorRadioButton.tres
+Loading resource: res://addons/gut/gui/option_maker.gd
+Loading resource: res://addons/openclaw/openclaw_plugin.gd
+[OpenClaw] Plugin loading...
+[OpenClaw] Plugin loaded!
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[OpenClaw MCP Bridge] Server started on http://127.0.0.1:27183
+[OpenClaw] Register failed: 0, 404
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (15 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | MediaPipeConfig[39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | DesktopSidecarLauncher[39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | MediaPipeProcess[39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | MediaPipeProvider[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | DesktopSidecarRuntime[39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | MediaPipeServer[39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | StrategyMediaPipe[39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | AutoStartManager[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | MediaPipeCameraView[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | MediaPipeInputWithCamera[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[  33% ] [90m[1mloading_editor_layout[22m | Reopening scenes...[39m[0m
+Loading resource: res://scenes/main.tscn
+Loading resource: res://src/main.gd
+[  50% ] [90m[1mloading_editor_layout[22m | Loading central editor layout...[39m[0m
+[  66% ] [90m[1mloading_editor_layout[22m | Loading plugin window layout...[39m[0m
+[  83% ] [90m[1mloading_editor_layout[22m | Editor layout ready.[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+thirdparty/mbedtls/library/ssl_tls13_generic.c:1552: 0x2a139cf8: Perform PSA-based ECDH/FFDH computation.
+thirdparty/mbedtls/library/ssl_tls13_client.c:1950: 0x2a139cf8: Switch to handshake keys for inbound traffic
+thirdparty/mbedtls/library/ssl_tls13_generic.c:0403: 0x2a139cf8: mbedtls_ssl_tls13_process_certificate_verify() returned 0 (-0x0000)
+thirdparty/mbedtls/library/ssl_tls13_client.c:2639: 0x2a139cf8: Switch to handshake traffic keys for outbound traffic
+thirdparty/mbedtls/library/ssl_tls13_generic.c:1235: 0x2a139cf8: Switch to application keys for inbound traffic
+thirdparty/mbedtls/library/ssl_tls13_generic.c:1238: 0x2a139cf8: Switch to application keys for outbound traffic
+[OpenClaw] Register failed: 0, 404
+Unloading addon: res://addons/aerobeat-input-core/plugin.cfg
+Unloading addon: res://addons/gut/plugin.cfg
+Unloading addon: res://addons/openclaw/plugin.cfg
+[OpenClaw] Plugin unloading...
+[OpenClaw MCP Bridge] Server stopped
+[OpenClaw] Plugin unloaded!
+Script docs haven't been properly loaded or regenerated, so don't save them to disk.
+EditorSettings: Save OK!
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+     at: cleanup (core/object/object.cpp:2641)
+Leaked instance: SceneTreeTimer:9223373768229980330 - Reference count: 1
+Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
+Orphan StringName: timeout (static: 2, total: 3)
+Orphan StringName: Node (static: 8, total: 9)
+StringName: 2 unclaimed string names at exit.

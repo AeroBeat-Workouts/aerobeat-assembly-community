@@ -1,0 +1,7 @@
+
+## host extension endpoint refs
+97:  // Only handle /godot/* paths
+116:      case "register": {
+165:      case "poll": {
+252:    api.registerHttpHandler(handleGodotHttpRequest);
+415:    logger.info("[Godot] Plugin loaded - HTTP endpoints at /godot/*");

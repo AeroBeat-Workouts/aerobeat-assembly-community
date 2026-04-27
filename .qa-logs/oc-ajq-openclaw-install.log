@@ -1,0 +1,109 @@
+=== manual cleanup of generated disposable addon/cache trees ===
+=== godotenv addons install retry ===
+Discovered "aerobeat-input-core."
+
+  Resolved: Addon "aerobeat-input-core" from `addons.jsonc` at `/` on branch `v0.1.2` of `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git`
+Discovered "aerobeat-input-mediapipe."
+
+  Resolved: Addon "aerobeat-input-mediapipe" from `addons.jsonc` at `/` on branch `main` of `git@github.com:AeroBeat-Workouts/aerobeat-input-mediapipe-python.git`
+Discovered "openclaw."
+
+  Resolved: Addon "openclaw" from `addons.jsonc` at `addons/openclaw/` on branch `main` of `git@github.com:TomLeeLive/openclaw-godot-plugin.git`
+Discovered "gut."
+
+  Resolved: Addon "gut" from `addons.jsonc` at `addons/gut/` on branch `main` of `git@github.com:bitwes/Gut.git`
+✅ Addons installed successfully.
+=== installed openclaw tree ===
+addons/openclaw/connection_manager.gd
+addons/openclaw/connection_manager.gd.uid
+addons/openclaw/.git/COMMIT_EDITMSG
+addons/openclaw/.git/config
+addons/openclaw/.git/description
+addons/openclaw/.git/HEAD
+addons/openclaw/.git/hooks/applypatch-msg.sample
+addons/openclaw/.git/hooks/commit-msg.sample
+addons/openclaw/.git/hooks/fsmonitor-watchman.sample
+addons/openclaw/.git/hooks/post-update.sample
+addons/openclaw/.git/hooks/pre-applypatch.sample
+addons/openclaw/.git/hooks/pre-commit.sample
+addons/openclaw/.git/hooks/pre-merge-commit.sample
+addons/openclaw/.git/hooks/prepare-commit-msg.sample
+addons/openclaw/.git/hooks/pre-push.sample
+addons/openclaw/.git/hooks/pre-rebase.sample
+addons/openclaw/.git/hooks/pre-receive.sample
+addons/openclaw/.git/hooks/push-to-checkout.sample
+addons/openclaw/.git/hooks/sendemail-validate.sample
+addons/openclaw/.git/hooks/update.sample
+addons/openclaw/.git/index
+addons/openclaw/.git/info/exclude
+addons/openclaw/.git/logs/HEAD
+addons/openclaw/mcp_bridge.gd
+addons/openclaw/openclaw_plugin.gd
+addons/openclaw/openclaw_plugin.gd.uid
+addons/openclaw/plugin.cfg
+addons/openclaw/tools.gd
+addons/openclaw/tools.gd.uid
+=== cached openclaw tree ===
+.addons/openclaw/addons/openclaw/connection_manager.gd
+.addons/openclaw/addons/openclaw/connection_manager.gd.uid
+.addons/openclaw/addons/openclaw/mcp_bridge.gd
+.addons/openclaw/addons/openclaw/openclaw_plugin.gd
+.addons/openclaw/addons/openclaw/openclaw_plugin.gd.uid
+.addons/openclaw/addons/openclaw/plugin.cfg
+.addons/openclaw/addons/openclaw/tools.gd
+.addons/openclaw/addons/openclaw/tools.gd.uid
+.addons/openclaw/CHANGELOG.md
+.addons/openclaw/Documentation~/CONTRIBUTING_KO.md
+.addons/openclaw/Documentation~/CONTRIBUTING.md
+.addons/openclaw/Documentation~/DEVELOPMENT_KO.md
+.addons/openclaw/Documentation~/DEVELOPMENT.md
+.addons/openclaw/Documentation~/README_KO.md
+.addons/openclaw/Documentation~/README.md
+.addons/openclaw/Documentation~/SETUP_GUIDE_KO.md
+.addons/openclaw/Documentation~/SETUP_GUIDE.md
+.addons/openclaw/Documentation~/TESTING_KO.md
+.addons/openclaw/Documentation~/TESTING.md
+.addons/openclaw/.git/config
+.addons/openclaw/.git/description
+.addons/openclaw/.git/FETCH_HEAD
+.addons/openclaw/.git/HEAD
+.addons/openclaw/.git/hooks/applypatch-msg.sample
+.addons/openclaw/.git/hooks/commit-msg.sample
+.addons/openclaw/.git/hooks/fsmonitor-watchman.sample
+.addons/openclaw/.git/hooks/post-update.sample
+.addons/openclaw/.git/hooks/pre-applypatch.sample
+.addons/openclaw/.git/hooks/pre-commit.sample
+.addons/openclaw/.git/hooks/pre-merge-commit.sample
+.addons/openclaw/.git/hooks/prepare-commit-msg.sample
+.addons/openclaw/.git/hooks/pre-push.sample
+.addons/openclaw/.git/hooks/pre-rebase.sample
+.addons/openclaw/.git/hooks/pre-receive.sample
+.addons/openclaw/.git/hooks/push-to-checkout.sample
+.addons/openclaw/.git/hooks/sendemail-validate.sample
+.addons/openclaw/.git/hooks/update.sample
+.addons/openclaw/.github/FUNDING.yml
+.addons/openclaw/.gitignore
+.addons/openclaw/.git/index
+.addons/openclaw/.git/info/exclude
+.addons/openclaw/.git/logs/HEAD
+.addons/openclaw/.git/ORIG_HEAD
+.addons/openclaw/.git/packed-refs
+.addons/openclaw/LICENSE
+.addons/openclaw/MCP~/index.js
+.addons/openclaw/MCP~/node_modules/.package-lock.json
+.addons/openclaw/MCP~/package.json
+.addons/openclaw/MCP~/package-lock.json
+.addons/openclaw/MCP~/README.md
+.addons/openclaw/OpenClawPlugin~/index.ts
+.addons/openclaw/OpenClawPlugin~/openclaw.plugin.json
+.addons/openclaw/OpenClawPlugin~/package.json
+.addons/openclaw/README_KO.md
+.addons/openclaw/README.md
+=== plugin.cfg ===
+[plugin]
+
+name="OpenClaw"
+description="Connect Godot to OpenClaw AI assistant via HTTP"
+author="OpenClaw Community"
+version="1.4.2"
+script="openclaw_plugin.gd"
