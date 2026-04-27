@@ -21,7 +21,7 @@ Assembly repos use a **root** `addons.jsonc` manifest instead of the package-rep
 - Canonical runtime/dev manifest: `addons.jsonc`
 - Installed addons: `addons/`
 - GodotEnv cache: `.addons/`
-- Repo-local tests: `test/`
+- Repo-local tests: `tests/`
 
 The repo root is the real runnable project. Restore dependencies into `addons/`, then open/import/test the root project directly.
 
@@ -55,7 +55,7 @@ From the repo root:
 
 ```bash
 godot --headless --path . --script addons/gut/gut_cmdln.gd \
-  -gdir=res://test \
+  -gdir=res://tests \
   -ginclude_subdirs \
   -gexit
 ```
@@ -78,7 +78,7 @@ This is deliberate and temporary, not hidden debt.
 - That addon path is sourced from `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git` pinned to `v0.1.0`.
 - `aerobeat-input-mediapipe-python` remains intentionally deferred and is consumed here through the compatibility install key `aerobeat-input-mediapipe` on `main` until its dedicated migration/release work exists.
 - `addons/` is a generated install target and must not be committed.
-- Repo-local tests live under `test/` and run against the root assembly project.
+- Repo-local tests live under `tests/` and run against the root assembly project.
 
 ## 📂 Structure
 
@@ -86,5 +86,5 @@ This is deliberate and temporary, not hidden debt.
 *   `project.godot` - Runnable AeroBeat app.
 *   `src/` - Assembly-specific game logic.
 *   `scenes/` - Root scenes for the assembly app.
-*   `test/` - Repo-local GUT and integration tests.
+*   `tests/` - Repo-local GUT and integration tests.
 *   `build-scripts/` - Distribution packaging scripts.

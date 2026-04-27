@@ -43,6 +43,6 @@ jobs:
       - name: 🧪 Run GUT tests
         run: |
           godot --headless --path . --script addons/gut/gut_cmdln.gd \
-            -gdir=res://test \
+            -gdir=res://tests \
             -ginclude_subdirs \
             -gexit

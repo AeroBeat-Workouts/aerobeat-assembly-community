@@ -3,7 +3,8 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
 echo "=== AeroBeat Assembly Community validation ==="
@@ -16,7 +17,7 @@ godot --headless --path . --import
 
 echo "Running root GUT suite..."
 godot --headless --path . --script addons/gut/gut_cmdln.gd \
-  -gdir=res://test \
+  -gdir=res://tests \
   -ginclude_subdirs \
   -gexit
 
