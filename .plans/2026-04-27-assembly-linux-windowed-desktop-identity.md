@@ -153,7 +153,7 @@ I also verified that the plan now reflects the real root cause and completion bo
 
 **Commits:**
 - `2dc1ed6` - Clean up Linux proof desktop identity
-- `12e40f6` - Audit Linux proof desktop identity closure
+- Audit closure commit - updated this plan to complete Task 4 and added `oc-cwx` audit evidence under `.qa-logs/`
 
 **Lessons Learned:** When Linux desktop identity looks wrong in Godot proof work, separate editor/debug-run windows from the exported artifact before changing project settings. For this repo, the truthful fix lived in project naming and emitted launcher metadata, not in fullscreen/window-mode behavior or any repo-owned utility-window flag.
 
