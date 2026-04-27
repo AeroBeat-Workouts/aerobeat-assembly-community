@@ -18,6 +18,13 @@
       "checkout": "main",
       "subfolder": "/"
     },
+    // Install only the upstream Godot addon subtree so the project receives
+    // res://addons/openclaw/ instead of the repo root helper/tooling folders.
+    "openclaw": {
+      "url": "git@github.com:TomLeeLive/openclaw-godot-plugin.git",
+      "checkout": "main",
+      "subfolder": "/addons/openclaw"
+    },
     // GUT remains a repo-local validation dependency for the root assembly project.
     "gut": {
       "url": "git@github.com:bitwes/Gut.git",
