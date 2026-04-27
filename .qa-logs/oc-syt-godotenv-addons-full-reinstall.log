@@ -1,0 +1,15 @@
+$ rm -rf addons/aerobeat-input-core addons/aerobeat-input-mediapipe addons/gut addons/openclaw
+$ godotenv addons install
+Discovered "aerobeat-input-core."
+
+  Resolved: Addon "aerobeat-input-core" from `addons.jsonc` at `/` on branch `v0.1.2` of `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git`
+Discovered "aerobeat-input-mediapipe."
+
+  Resolved: Addon "aerobeat-input-mediapipe" from `addons.jsonc` at `/` on branch `main` of `git@github.com:AeroBeat-Workouts/aerobeat-input-mediapipe-python.git`
+Discovered "openclaw."
+
+  Resolved: Addon "openclaw" from `addons.jsonc` at `addons/openclaw/` on branch `main` of `git@github.com:TomLeeLive/openclaw-godot-plugin.git`
+Discovered "gut."
+
+  Resolved: Addon "gut" from `addons.jsonc` at `addons/gut/` on branch `main` of `git@github.com:bitwes/Gut.git`
+✅ Addons installed successfully.

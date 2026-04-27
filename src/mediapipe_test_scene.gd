@@ -7,6 +7,8 @@ extends Node2D
 @onready var camera_display: TextureRect = $CameraDisplay
 @onready var landmark_drawer: Control = $CameraDisplay/LandmarkDrawer
 
+@export var start_pose_provider: bool = false
+
 var provider: Node = null
 var auto_start_manager: Node = null
 var camera_view: Node = null
@@ -62,7 +64,16 @@ func _on_server_started(pid: int) -> void:
 	
 	# Wait a moment for server to initialize
 	await get_tree().create_timer(2.0).timeout
-	_start_provider()
+	if start_pose_provider:
+		_start_provider()
+	else:
+		_server_ready = true
+		update_status("Python sidecar running (camera preview mode)", Color.GREEN)
+		info_label.text = """MediaPipe sidecar ready
+
+Python runtime resolved from the installed addon venv.
+Camera preview is active.
+Pose provider start is disabled in this proof scene to keep the play path warning-free."""
 	await _start_camera_feed()
 
 func _on_server_failed(error: String) -> void:

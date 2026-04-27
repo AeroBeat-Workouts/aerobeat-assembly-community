@@ -1,0 +1,2 @@
+$ addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python -c "import mediapipe, cv2, numpy; print(\"OK\")"
+OK
