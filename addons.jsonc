@@ -11,11 +11,12 @@
     // Compatibility alias: the assembly currently loads this addon from
     // res://addons/aerobeat-input-mediapipe/, but the owning repo still lives at
     // aerobeat-input-mediapipe-python and remains intentionally deferred from the
-    // broader migration wave. Keep that boundary explicit instead of pretending a
-    // clean released/tagged contract exists already.
+    // broader migration wave. Pin this proof pass to the exact source commit that
+    // flips the upstream proof scene to tracking-by-default so consumer refreshes
+    // are reproducible during Cookie retest.
     "aerobeat-input-mediapipe": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-mediapipe-python.git",
-      "checkout": "main",
+      "checkout": "e2d203f72301d94c18334ace1d0e986c3512a224",
       "subfolder": "/"
     },
     // Install only the upstream Godot addon subtree so the project receives

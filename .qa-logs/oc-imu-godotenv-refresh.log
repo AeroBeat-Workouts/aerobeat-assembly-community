@@ -1,0 +1,32 @@
+=== 2026-04-28T11:07:50-04:00 godotenv addons install retry ===
+Discovered "aerobeat-input-core."
+
+  Resolved: Addon "aerobeat-input-core" from `addons.jsonc` at `/` on branch `v0.1.2` of `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git`
+Discovered "aerobeat-input-mediapipe."
+
+  Resolved: Addon "aerobeat-input-mediapipe" from `addons.jsonc` at `/` on branch `e2d203f72301d94c18334ace1d0e986c3512a224` of `git@github.com:AeroBeat-Workouts/aerobeat-input-mediapipe-python.git`
+Discovered "openclaw."
+
+  Resolved: Addon "openclaw" from `addons.jsonc` at `addons/openclaw/` on branch `main` of `git@github.com:TomLeeLive/openclaw-godot-plugin.git`
+Discovered "gut."
+
+  Resolved: Addon "gut" from `addons.jsonc` at `addons/gut/` on branch `main` of `git@github.com:bitwes/Gut.git`
+✅ Addons installed successfully.
+--- installed repo HEAD ---
+7b9ab318d8c9505b237e33c26122985c1d78d8a9
+--- installed repo status ---
+## main
+--- cache repo HEAD ---
+e2d203f72301d94c18334ace1d0e986c3512a224
+--- cache repo status ---
+## HEAD (no branch)
+--- proof default markers ---
+10:enum StartupMode {
+15:@export var startup_mode: StartupMode = StartupMode.TRACKING
+74:	if startup_mode == StartupMode.PREVIEW_ONLY_DEBUG:
+76:		update_status("Preview-only debug mode active", Color.GREEN)
+79:Mode: Preview-only debug (explicit opt-in).
+138:Mode: Tracking (default).
+215:	info += "Mode: %s\n" % _get_startup_mode_label()
+236:func _get_startup_mode_label() -> String:
+237:	return "Preview-only debug" if startup_mode == StartupMode.PREVIEW_ONLY_DEBUG else "Tracking (default)"

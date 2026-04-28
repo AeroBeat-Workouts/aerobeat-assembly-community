@@ -1,13 +1,23 @@
 extends Node2D
-## Test scene for MediaPipe Provider with AutoStart and Camera Feed
-## Automatically starts Python sidecar and displays camera feed with skeleton overlay
+## Assembly-owned MediaPipe proof scene copy.
+##
+## This remains a consumer-local adaptation of the source repo testbed scene so
+## the assembly export path can use assembly-local helper scripts and mounted
+## addon runtime wiring. Its startup contract is intentionally kept in sync with
+## the real source proof behavior: tracking is the default, and preview-only is
+## an explicit debug opt-in.
 
 @onready var status_label: Label = $StatusLabel
 @onready var info_label: Label = $InfoLabel
 @onready var camera_display: TextureRect = $CameraDisplay
 @onready var landmark_drawer: Control = $CameraDisplay/LandmarkDrawer
 
-@export var start_pose_provider: bool = false
+enum StartupMode {
+	TRACKING,
+	PREVIEW_ONLY_DEBUG,
+}
+
+@export var startup_mode: StartupMode = StartupMode.TRACKING
 
 var provider: Node = null
 var auto_start_manager: Node = null
@@ -64,17 +74,21 @@ func _on_server_started(pid: int) -> void:
 	
 	# Wait a moment for server to initialize
 	await get_tree().create_timer(2.0).timeout
-	if start_pose_provider:
-		_start_provider()
-	else:
-		_server_ready = true
-		update_status("Python sidecar running (camera preview mode)", Color.GREEN)
-		info_label.text = """MediaPipe sidecar ready
-
-Python runtime resolved from the installed addon venv.
-Camera preview is active.
-Pose provider start is disabled in this proof scene to keep the play path warning-free."""
 	await _start_camera_feed()
+
+	if startup_mode == StartupMode.PREVIEW_ONLY_DEBUG:
+		_server_ready = true
+		update_status("Preview-only debug mode active", Color.GREEN)
+		info_label.text = """MediaPipe Provider Ready
+
+Mode: Preview-only debug (explicit opt-in).
+Camera preview is active.
+Pose tracking is intentionally disabled in this mode."""
+		if landmark_drawer:
+			landmark_drawer.clear_landmarks()
+		return
+
+	_start_provider()
 
 func _on_server_failed(error: String) -> void:
 	update_status("Auto-start failed: " + error, Color.RED)
@@ -123,13 +137,12 @@ func _start_provider() -> void:
 		var success: bool = provider.start()
 		if success:
 			_server_ready = true
-			update_status("Provider listening on port " + str(provider._server.get_bound_port()) + " - Waiting for tracking data...", Color.GREEN)
+			update_status("Tracking mode active - waiting for pose data...", Color.GREEN)
 			info_label.text = """MediaPipe Provider Ready
 
-Camera feed and tracking active.
-
-Landmarks appear as green dots.
-Make sure you're in a well-lit area."""
+Mode: Tracking (default).
+Camera feed and pose tracking are active.
+Landmarks appear as green dots when a pose is detected."""
 		else:
 			update_status("Failed to start provider", Color.RED)
 
@@ -199,27 +212,34 @@ func update_status(text: String, color: Color = Color.WHITE) -> void:
 		status_label.modulate = color
 
 func _update_debug_info() -> void:
-	if not info_label or not provider or not _server_ready:
+	if not info_label or not _server_ready:
 		return
 	
 	var info: String = "MediaPipe Provider Status\n"
 	info += "==========================\n\n"
+	info += "Mode: %s\n" % _get_startup_mode_label()
 	
 	if auto_start_manager:
 		info += "Server PID: " + str(auto_start_manager.get_server_pid()) + "\n"
 		info += "Server Running: " + str(auto_start_manager.is_server_running()) + "\n"
 	
+	info += "Camera Feed: %s\n" % ("Active" if camera_view and camera_view.is_streaming() else "Inactive")
+	
 	if provider:
 		info += "Provider Port: %d\n" % provider._server.get_bound_port()
 		info += "Is Tracking: %s\n" % str(provider.is_tracking())
-		info += "Camera Feed: %s\n" % ("Active" if camera_view and camera_view.is_streaming() else "Inactive")
 		
 		info += "\nDetected Positions:\n"
 		info += "  Left Hand: %s\n" % (_format_pos(provider.get_left_hand_position()))
 		info += "  Right Hand: %s\n" % (_format_pos(provider.get_right_hand_position()))
 		info += "  Head: %s\n" % (_format_pos(provider.get_head_position()))
+	else:
+		info += "Tracking: Disabled (preview-only debug mode)\n"
 	
 	info_label.text = info
+
+func _get_startup_mode_label() -> String:
+	return "Preview-only debug" if startup_mode == StartupMode.PREVIEW_ONLY_DEBUG else "Tracking (default)"
 
 func _format_pos(pos: Variant) -> String:
 	if pos == null:
