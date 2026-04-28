@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://dbr2oqym2esfj"]
+
+[ext_resource type="Script" path="res://src/mediapipe_control_test_scene.gd" id="1_control"]
+
+[node name="ControlScene" type="Node2D" unique_id=1885802178]
+script = ExtResource("1_control")
+
+[node name="StatusLabel" type="Label" parent="." unique_id=939574801]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 620.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 24
+text = "Initializing..."
+
+[node name="InfoLabel" type="Label" parent="." unique_id=157047902]
+offset_left = 20.0
+offset_top = 560.0
+offset_right = 400.0
+offset_bottom = 700.0
+theme_override_font_sizes/font_size = 14
+
+[node name="CameraDisplay" type="TextureRect" parent="." unique_id=1965005787]
+offset_left = 20.0
+offset_top = 80.0
+offset_right = 660.0
+offset_bottom = 520.0
+expand_mode = 1
+stretch_mode = 5

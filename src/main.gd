@@ -3,6 +3,7 @@ extends Node
 
 const MEDIAPIPE_INPUT_PROVIDER := preload("res://addons/aerobeat-input-mediapipe/src/input_provider.gd")
 const MEDIAPIPE_PROOF_SCENE_PATH := "res://scenes/mediapipe_test_scene.tscn"
+const MEDIAPIPE_PROOF_CONTROL_SCENE_PATH := "res://scenes/mediapipe_control_test_scene.tscn"
 
 @onready var input_manager: InputManager = $InputManager
 @onready var ui: CanvasLayer = $UI
@@ -21,6 +22,11 @@ var _mediapipe_provider: AeroInputProvider = null
 func _ready() -> void:
     print("AeroBeat started")
     print("Godot version: ", Engine.get_version_info())
+
+    if OS.has_feature("mediapipe_proof_control"):
+        print("Mediapipe proof control export feature detected; launching no-sidecar control scene")
+        call_deferred("_launch_mediapipe_proof_control_scene")
+        return
 
     if OS.has_feature("mediapipe_proof"):
         print("Mediapipe proof export feature detected; launching proof scene")
@@ -78,6 +84,12 @@ func _launch_mediapipe_proof_scene() -> void:
     if err != OK:
         push_error("Failed to switch into MediaPipe proof scene: %s" % MEDIAPIPE_PROOF_SCENE_PATH)
         _show_error("Failed to open MediaPipe proof scene")
+
+func _launch_mediapipe_proof_control_scene() -> void:
+    var err := get_tree().change_scene_to_file(MEDIAPIPE_PROOF_CONTROL_SCENE_PATH)
+    if err != OK:
+        push_error("Failed to switch into MediaPipe proof control scene: %s" % MEDIAPIPE_PROOF_CONTROL_SCENE_PATH)
+        _show_error("Failed to open MediaPipe proof control scene")
 
 func _register_input_providers() -> void:
     var mediapipe: AeroInputProvider = MEDIAPIPE_INPUT_PROVIDER.new()
