@@ -252,9 +252,8 @@ func _format_pos(pos: Variant) -> String:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		print("[TestScene] Window close request, stopping everything...")
+		print("[TestScene] Window close request, stopping everything before normal close...")
 		_stop_everything()
-		get_tree().quit()
 	elif what == NOTIFICATION_EXIT_TREE:
 		print("[TestScene] Exit tree, stopping everything...")
 		_stop_everything()

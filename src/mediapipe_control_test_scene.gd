@@ -51,5 +51,4 @@ func update_status(text: String, color: Color = Color.WHITE) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		print("[ControlScene] Window close request; quitting without sidecar teardown")
-		get_tree().quit()
+		print("[ControlScene] Window close request; allowing normal window close path")
