@@ -148,16 +148,15 @@ func stop_server() -> void:
 
 	_is_stopping = true
 	print("[AutoStartManager] stop_server() called, PID: ", server_pid)
+	_log_shutdown_state("stop_server.begin")
 	_stop_heartbeat()
 	OS.delay_msec(200)
 
 	if not _launch_info.is_empty():
 		var termination_result := await DesktopSidecarLauncher.terminate(self, _launch_info, 2000)
+		_log_shutdown_result("stop_server.async", termination_result)
 		for note in termination_result.get("notes", PackedStringArray()):
 			push_warning("[AutoStartManager] %s" % note)
-
-	if OS.get_name() == "Linux":
-		await _run_linux_cleanup_patterns()
 
 	_cleanup_server_state()
 	_is_stopping = false
@@ -167,14 +166,15 @@ func stop_server() -> void:
 func _has_active_server_state() -> bool:
 	return _is_running or server_pid > 1 or not _launch_info.is_empty()
 
-func _run_linux_cleanup_patterns() -> void:
-	var output: Array = []
-	OS.execute("pkill", ["-9", "-f", "python_mediapipe/main.py"], output, false)
-	OS.delay_msec(100)
-	OS.execute("pkill", ["-9", "-f", "main.py"], output, false)
-	OS.delay_msec(100)
-	OS.execute("fuser", ["-k", "-9", "/dev/video0"], output, false)
-	OS.delay_msec(100)
+func _log_shutdown_state(label: String) -> void:
+	var launch_pid := int(_launch_info.get("pid", -1))
+	var launch_pgid := int(_launch_info.get("process_group_id", -1))
+	print("[AutoStartManager] %s launch_info=%s pid=%d pgid=%d server_pid=%d" % [label, str(_launch_info), launch_pid, launch_pgid, server_pid])
+
+func _log_shutdown_result(label: String, result: Dictionary) -> void:
+	print("[AutoStartManager] %s terminate_result=%s" % [label, str(result)])
+	for note in result.get("notes", PackedStringArray()):
+		print("[AutoStartManager] %s note: %s" % [label, note])
 
 func _cleanup_server_state() -> void:
 	if _heartbeat_udp:
@@ -441,10 +441,9 @@ func _notification(what: int) -> void:
 func _stop_sync() -> void:
 	if _is_stopping or not _has_active_server_state():
 		return
+	_log_shutdown_state("stop_sync.begin")
 	_stop_heartbeat()
 	OS.delay_msec(200)
-	DesktopSidecarLauncher.terminate_sync(_launch_info)
-	if OS.get_name() == "Linux":
-		var output: Array = []
-		OS.execute("pkill", ["-9", "-f", "python_mediapipe/main.py"], output, false)
+	var termination_result := DesktopSidecarLauncher.terminate_sync(_launch_info)
+	_log_shutdown_result("stop_sync.sync", termination_result)
 	_cleanup_server_state()
