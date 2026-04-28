@@ -1,0 +1,22 @@
+; Engine configuration file.
+; Minimal standalone close-path repro project for Linux export QA.
+
+config_version=5
+
+[application]
+
+config/name="GodotClosePathMinimal"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "Forward Plus")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=960
+window/size/viewport_height=540
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+textures/vram_compression/import_etc2_astc=true
