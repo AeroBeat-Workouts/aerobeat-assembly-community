@@ -16,6 +16,7 @@ NC='\033[0m'
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/linux-direct-close-harness"
 DIST_DIR="${PROJECT_ROOT}/dist"
+LAUNCHER_INCLUDE="${PROJECT_ROOT}/build-scripts/templates/godot-linux-launch.inc.sh"
 BUNDLE_NAME="AeroBeatDirectCloseHarness-Linux"
 BUNDLE_DIR="${DIST_DIR}/${BUNDLE_NAME}"
 EXPORT_NAME="AeroBeatDirectCloseHarness.x86_64"
@@ -81,6 +82,11 @@ if [ ! -f "${PROJECT_ROOT}/scenes/direct_close_harness.tscn" ]; then
     exit 1
 fi
 
+if [ ! -f "${LAUNCHER_INCLUDE}" ]; then
+    log_error "Missing launcher helper template at ${LAUNCHER_INCLUDE}"
+    exit 1
+fi
+
 cp "${PROJECT_FILE}" "${PROJECT_BACKUP}"
 
 log_info "Temporarily rewriting run/main_scene to ${HARNESS_SCENE} for export..."
@@ -133,6 +139,7 @@ fi
 if [ -f "${PROJECT_ROOT}/icon.svg" ]; then
     cp "${PROJECT_ROOT}/icon.svg" "${BUNDLE_DIR}/"
 fi
+cp "${LAUNCHER_INCLUDE}" "${BUNDLE_DIR}/godot-linux-launch.inc.sh"
 rm -f "${BUNDLE_DIR}/icon.svg.import"
 
 cat > "${BUNDLE_DIR}/run-direct-close-harness.sh" <<'SCRIPT'
@@ -140,8 +147,11 @@ cat > "${BUNDLE_DIR}/run-direct-close-harness.sh" <<'SCRIPT'
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+# shellcheck source=/dev/null
+source "${SCRIPT_DIR}/godot-linux-launch.inc.sh"
+launcher_select_display_driver "$@"
 chmod +x ./AeroBeatDirectCloseHarness.x86_64
-exec ./AeroBeatDirectCloseHarness.x86_64 "$@"
+exec ./AeroBeatDirectCloseHarness.x86_64 "${LAUNCHER_DISPLAY_ARGS[@]}" "${LAUNCHER_PASSTHROUGH_ARGS[@]}"
 SCRIPT
 chmod +x "${BUNDLE_DIR}/run-direct-close-harness.sh"
 
@@ -151,7 +161,7 @@ Version=1.0
 Type=Application
 Name=AeroBeat
 Comment=AeroBeat direct close harness build
-Exec=AeroBeatDirectCloseHarness.x86_64
+Exec=run-direct-close-harness.sh
 Icon=icon.svg
 Terminal=false
 Categories=Game;
@@ -182,13 +192,24 @@ Desktop integration:
 Files of interest:
 - AeroBeatDirectCloseHarness.x86_64   Direct-entry export binary
 - AeroBeatDirectCloseHarness.pck      Exported project data (if not embedded)
-- run-direct-close-harness.sh         Convenience launcher
+- run-direct-close-harness.sh         Convenience launcher with Wayland preference logic
+- godot-linux-launch.inc.sh           Shared Linux launcher helper used by the wrapper
 
 Launch:
   ./run-direct-close-harness.sh
 
+Wayland workaround behavior:
+- On Wayland sessions, ./run-direct-close-harness.sh prefers native Wayland by adding:
+    --display-driver wayland
+- On X11-only systems, the launcher leaves the export's default path unchanged
+- Disable/rollback for one launch with:
+    AEROBEAT_FORCE_X11=1 ./run-direct-close-harness.sh
+    ./run-direct-close-harness.sh --x11
+- Force Wayland explicitly with:
+    ./run-direct-close-harness.sh --wayland
+
 Optional smoke run:
-  ./AeroBeatDirectCloseHarness.x86_64 --quit-after 300
+  ./run-direct-close-harness.sh --quit-after 300
 EOF
 
 (

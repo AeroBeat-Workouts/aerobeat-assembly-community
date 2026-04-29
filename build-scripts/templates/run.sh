@@ -12,6 +12,8 @@
 #   --mock          Use mock server instead of real MediaPipe
 #   --camera N      Use camera device N (default: 0)
 #   --no-camera     Skip camera check (not recommended)
+#   --x11           Disable the Wayland workaround for this launch
+#   --wayland       Force native Wayland for this launch
 
 set -e
 
@@ -28,11 +30,19 @@ BOLD='\033[1m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUNDLE_DIR="$SCRIPT_DIR"
 
+# shellcheck source=build-scripts/templates/godot-linux-launch.inc.sh
+source "${SCRIPT_DIR}/godot-linux-launch.inc.sh"
+
 # Default configuration
 USE_MOCK=false
 CAMERA_ID=0
 SKIP_CAMERA_CHECK=false
 SIDECAR_PID=""
+ORIGINAL_ARGS=("$@")
+LAUNCHER_DISPLAY_ARGS=()
+LAUNCHER_PASSTHROUGH_ARGS=()
+LAUNCHER_FORCE_X11=false
+LAUNCHER_FORCE_WAYLAND=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -49,6 +59,9 @@ while [[ $# -gt 0 ]]; do
             SKIP_CAMERA_CHECK=true
             shift
             ;;
+        --x11|--wayland)
+            shift
+            ;;
         --help|-h)
             echo "AeroBeat Launcher"
             echo ""
@@ -58,11 +71,14 @@ while [[ $# -gt 0 ]]; do
             echo "  --mock          Use mock server for testing (no camera needed)"
             echo "  --camera N      Use camera device N (default: 0)"
             echo "  --no-camera     Skip camera detection (not recommended)"
+            echo "  --x11           Disable the Wayland workaround for this launch"
+            echo "  --wayland       Force native Wayland for this launch"
             echo "  --help, -h      Show this help message"
             echo ""
             echo "Environment Variables:"
             echo "  AEROBEAT_CAMERA    Camera device ID (default: 0)"
             echo "  AEROBEAT_MOCK      Set to 1 to use mock server"
+            echo "  AEROBEAT_FORCE_X11 Set to 1 to disable the Wayland workaround"
             echo ""
             exit 0
             ;;
@@ -75,8 +91,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check environment variables
-[ -n "$AEROBEAT_CAMERA" ] && CAMERA_ID="$AEROBEAT_CAMERA"
-[ "$AEROBEAT_MOCK" = "1" ] && USE_MOCK=true
+[ -n "${AEROBEAT_CAMERA:-}" ] && CAMERA_ID="$AEROBEAT_CAMERA"
+[ "${AEROBEAT_MOCK:-0}" = "1" ] && USE_MOCK=true
 
 # Helper functions for colored output
 status_info() {
@@ -242,6 +258,9 @@ fi
 status_step "Starting AeroBeat..."
 echo ""
 
+launcher_select_display_driver "${ORIGINAL_ARGS[@]}"
+launcher_report_display_driver_choice
+
 GAME_EXEC="${BUNDLE_DIR}/AeroBeat.x86_64"
 
 if [ ! -f "$GAME_EXEC" ]; then
@@ -257,7 +276,7 @@ status_info "Launching game... (press Ctrl+C to quit)"
 echo ""
 
 # Run game and capture exit code
-"$GAME_EXEC" "$@"
+"$GAME_EXEC" "${LAUNCHER_DISPLAY_ARGS[@]}" "${LAUNCHER_PASSTHROUGH_ARGS[@]}"
 GAME_EXIT=$?
 
 echo ""

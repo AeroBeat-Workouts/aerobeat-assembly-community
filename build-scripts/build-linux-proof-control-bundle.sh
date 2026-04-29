@@ -16,6 +16,7 @@ NC='\033[0m'
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/linux-proof-control"
 DIST_DIR="${PROJECT_ROOT}/dist"
+LAUNCHER_INCLUDE="${PROJECT_ROOT}/build-scripts/templates/godot-linux-launch.inc.sh"
 BUNDLE_NAME="AeroBeatAssemblyProofControl-Linux"
 BUNDLE_DIR="${DIST_DIR}/${BUNDLE_NAME}"
 EXPORT_NAME="AeroBeatAssemblyProofControl.x86_64"
@@ -58,6 +59,11 @@ if [ ! -f "${PROJECT_ROOT}/export_presets.cfg" ]; then
     exit 1
 fi
 
+if [ ! -f "${LAUNCHER_INCLUDE}" ]; then
+    log_error "Missing launcher helper template at ${LAUNCHER_INCLUDE}"
+    exit 1
+fi
+
 log_info "Exporting Godot project with preset '${EXPORT_PRESET}'..."
 (
     cd "${PROJECT_ROOT}"
@@ -90,6 +96,7 @@ fi
 if [ -f "${PROJECT_ROOT}/icon.svg" ]; then
     cp "${PROJECT_ROOT}/icon.svg" "${BUNDLE_DIR}/"
 fi
+cp "${LAUNCHER_INCLUDE}" "${BUNDLE_DIR}/godot-linux-launch.inc.sh"
 rm -f "${BUNDLE_DIR}/icon.svg.import"
 
 cat > "${BUNDLE_DIR}/run-proof-control.sh" <<'SCRIPT'
@@ -97,8 +104,11 @@ cat > "${BUNDLE_DIR}/run-proof-control.sh" <<'SCRIPT'
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+# shellcheck source=/dev/null
+source "${SCRIPT_DIR}/godot-linux-launch.inc.sh"
+launcher_select_display_driver "$@"
 chmod +x ./AeroBeatAssemblyProofControl.x86_64
-exec ./AeroBeatAssemblyProofControl.x86_64 "$@"
+exec ./AeroBeatAssemblyProofControl.x86_64 "${LAUNCHER_DISPLAY_ARGS[@]}" "${LAUNCHER_PASSTHROUGH_ARGS[@]}"
 SCRIPT
 chmod +x "${BUNDLE_DIR}/run-proof-control.sh"
 
@@ -108,7 +118,7 @@ Version=1.0
 Type=Application
 Name=AeroBeat
 Comment=AeroBeat MediaPipe Linux proof control build
-Exec=AeroBeatAssemblyProofControl.x86_64
+Exec=run-proof-control.sh
 Icon=icon.svg
 Terminal=false
 Categories=Game;
@@ -135,10 +145,21 @@ Desktop integration:
 Files of interest:
 - AeroBeatAssemblyProofControl.x86_64 Control export binary
 - AeroBeatAssemblyProofControl.pck    Exported project data (if not embedded)
-- run-proof-control.sh                Convenience launcher
+- run-proof-control.sh                Convenience launcher with Wayland preference logic
+- godot-linux-launch.inc.sh           Shared Linux launcher helper used by the wrapper
 
 Launch:
   ./run-proof-control.sh
+
+Wayland workaround behavior:
+- On Wayland sessions, ./run-proof-control.sh prefers native Wayland by adding:
+    --display-driver wayland
+- On X11-only systems, the launcher leaves the export's default path unchanged
+- Disable/rollback for one launch with:
+    AEROBEAT_FORCE_X11=1 ./run-proof-control.sh
+    ./run-proof-control.sh --x11
+- Force Wayland explicitly with:
+    ./run-proof-control.sh --wayland
 EOF
 
 (

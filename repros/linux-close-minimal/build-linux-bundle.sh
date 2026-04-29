@@ -20,6 +20,7 @@ require_cmd() {
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/build/linux"
 DIST_DIR="${PROJECT_ROOT}/dist/GodotClosePathMinimal-Linux"
+LAUNCHER_INCLUDE="${PROJECT_ROOT}/../../build-scripts/templates/godot-linux-launch.inc.sh"
 LOG_DIR="${PROJECT_ROOT}/.qa-logs"
 EXPORT_LOG="${LOG_DIR}/export.log"
 BUNDLE_LOG="${LOG_DIR}/bundle.log"
@@ -30,6 +31,10 @@ ARCHIVE_PATH="${PROJECT_ROOT}/dist/GodotClosePathMinimal-Linux.tar.gz"
 
 require_cmd godot
 require_cmd tar
+if [ ! -f "${LAUNCHER_INCLUDE}" ]; then
+    log_error "Missing launcher helper template: ${LAUNCHER_INCLUDE}"
+    exit 1
+fi
 mkdir -p "${BUILD_DIR}" "${DIST_DIR}" "${LOG_DIR}"
 rm -rf "${DIST_DIR}" "${ARCHIVE_PATH}"
 mkdir -p "${DIST_DIR}"
@@ -50,13 +55,17 @@ if [ -f "${BUILD_DIR}/${PCK_NAME}" ]; then
     cp "${BUILD_DIR}/${PCK_NAME}" "${DIST_DIR}/"
 fi
 cp "${PROJECT_ROOT}/icon.svg" "${DIST_DIR}/"
+cp "${LAUNCHER_INCLUDE}" "${DIST_DIR}/godot-linux-launch.inc.sh"
 
 cat > "${DIST_DIR}/run.sh" <<'SCRIPT'
 #!/bin/bash
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
-exec ./GodotClosePathMinimal.x86_64 "$@"
+# shellcheck source=/dev/null
+source "${SCRIPT_DIR}/godot-linux-launch.inc.sh"
+launcher_select_display_driver "$@"
+exec ./GodotClosePathMinimal.x86_64 "${LAUNCHER_DISPLAY_ARGS[@]}" "${LAUNCHER_PASSTHROUGH_ARGS[@]}"
 SCRIPT
 chmod +x "${DIST_DIR}/run.sh"
 
@@ -74,6 +83,16 @@ Launch:
 
 Fast smoke check:
   ./run.sh --quit-after 300
+
+Wayland workaround behavior:
+- On Wayland sessions, ./run.sh prefers native Wayland by adding:
+    --display-driver wayland
+- On X11-only systems, the launcher leaves the export's default path unchanged
+- Disable/rollback for one launch with:
+    AEROBEAT_FORCE_X11=1 ./run.sh
+    ./run.sh --x11
+- Force Wayland explicitly with:
+    ./run.sh --wayland
 
 Manual close-path QA:
 1. Launch ./run.sh from a terminal.
