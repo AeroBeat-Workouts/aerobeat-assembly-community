@@ -24,4 +24,4 @@ func _notification(what: int) -> void:
 
 func _update_details() -> void:
 	var uptime_ms := Time.get_ticks_msec() - _started_at_ms
-	details_label.text = "This is a brand-new standalone Godot project kept outside the AeroBeat boot path.\n\nExpected behavior:\n1. Export bundle launches to this one screen.\n2. Closing the window prints WM_CLOSE_REQUEST to stdout.\n3. Process exits immediately after get_tree().quit().\n\nUptime: %.2fs\nFrames: %d" % [float(uptime_ms) / 1000.0, _frames]
+	details_label.text = "Minimal standalone Godot close-path reproduction project.\n\nExpected behavior:\n1. The exported app opens to this single screen.\n2. Closing the window prints WM_CLOSE_REQUEST to stdout.\n3. The process exits immediately after get_tree().quit().\n\nUptime: %.2fs\nFrames: %d" % [float(uptime_ms) / 1000.0, _frames]

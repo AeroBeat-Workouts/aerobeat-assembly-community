@@ -1,42 +1,43 @@
-# Linux Minimal Close Repro
+# Godot Linux Close-Path Minimal Reproduction Project
 
-This folder contains a brand-new standalone Godot project used to isolate the exported Linux window-close path.
+This folder contains a minimal standalone Godot project for reproducing a Linux exported-app close-path issue.
 
-## Why it exists
+## Purpose
 
-The repo already showed the close hang with a direct trivial scene inside the main AeroBeat project. This repro strips the test down further so QA can compare behavior without any AeroBeat bootstrap path, addons, or feature-scene switching involved.
+Use this project to compare exported Linux close behavior with a stripped-down project:
 
-## Contents
+- one scene
+- one script
+- stdout logging for startup and window-close handling
+- no project-specific game code, addons, or extra content
 
-- `project.godot` - standalone project entry
+## Project files
+
+- `project.godot` - project entry point
+- `export_presets.cfg` - Linux export preset used during testing
 - `scenes/main.tscn` - only scene
-- `scripts/main.gd` - ready + WM_CLOSE logging
-- `build-linux-bundle.sh` - exports and assembles a QA bundle
+- `scripts/main.gd` - startup and `WM_CLOSE_REQUEST` logging
 
-## Build
+## Open the project
 
-```bash
-cd repros/linux-close-minimal
-./build-linux-bundle.sh
-```
+Open the folder in Godot and run or export the project normally.
 
-## QA flow
+## Expected output
 
-```bash
-cd repros/linux-close-minimal/dist/GodotClosePathMinimal-Linux
-./run.sh
-```
-
-Expected terminal output on launch:
+On launch:
 
 ```text
 [MinimalCloseRepro] READY pid=... title=GodotClosePathMinimal
 ```
 
-Expected terminal output when the close button is pressed:
+When the window close button is pressed:
 
 ```text
 [MinimalCloseRepro] WM_CLOSE_REQUEST uptime_ms=... frames=...
 ```
 
-If the process still hangs after that log line, the repro supports the upstream/runtime/window-manager hypothesis while staying completely outside the AeroBeat app/bootstrap flow.
+## Expected behavior
+
+After the `WM_CLOSE_REQUEST` log line is printed, the process should exit immediately.
+
+If the process remains alive after that point, the reproduction has succeeded.
