@@ -230,7 +230,7 @@ cat > "${APP_BUNDLE}/Contents/Info.plist" << 'EOF'
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSCameraUsageDescription</key>
-    <string>AeroBeat needs camera access to track your body movements for air drumming. No video is recorded or sent anywhere.</string>
+    <string>AeroBeat needs camera access for camera-based Boxing and Flow tracking. No video is recorded or sent anywhere.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>AeroBeat does not use the microphone.</string>
 </dict>
@@ -328,14 +328,14 @@ chmod +x "${APP_BUNDLE}/Contents/MacOS/launcher"
 
 # Create README
 cat > "${DIST_DIR}/README-macOS.txt" << 'EOF'
-AeroBeat - Air Drumming Game (macOS)
+AeroBeat - PC Community Camera Build (macOS)
 =====================================
 
 Quick Start:
 1. Right-click AeroBeat.app and select "Open"
 2. Click "Open" in the security dialog (first time only)
 3. Grant camera access when prompted
-4. Start drumming in the air!
+4. Start the camera-first workout session.
 
 If you see "AeroBeat can't be opened":
 - Go to System Settings → Privacy & Security
@@ -358,7 +358,7 @@ Troubleshooting:
 - If game won't start: Check Console app for errors
 - For performance: Close other applications
 
-For help: https://github.com/AeroBeat/docs
+For help: https://github.com/AeroBeat-Workouts/aerobeat-assembly-community
 EOF
 
 echo -e "${GREEN}✓ Launcher and README created${NC}"

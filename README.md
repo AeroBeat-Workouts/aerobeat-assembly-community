@@ -1,18 +1,39 @@
 # AeroBeat Assembly Community
 
-This repo is the community assembly app for AeroBeat.
+This repo is the **active PC community assembly app** for AeroBeat's current v1 product slice.
 
-An **Assembly** is the top-level Godot project that composes released or in-flight AeroBeat addons into a runnable game client.
+An **Assembly** is the top-level Godot project that composes the concrete AeroBeat addons needed to produce a runnable game client.
 
-## 📋 Repository Details
+## Current product truth
 
-*   **Type:** Assembly (Game Client)
-*   **License:** **GNU GPLv3** (Strict Copyleft)
-*   **Primary dependency contract:** `addons.jsonc` at repo root
-*   **Current concrete dependencies:**
-    *   `aerobeat-input-core` pinned at `v0.1.0`, installed at addon key/path `aerobeat-input-core`
-    *   `aerobeat-input-mediapipe-python` via the temporary installed-addon compatibility path `addons/aerobeat-input-mediapipe`
-    *   `gut` (Repo-local test dependency)
+This assembly should be read against the locked `aerobeat-docs` v1 scope:
+
+- **official v1 gameplay:** Boxing and Flow
+- **official v1 gameplay input:** camera only
+- **primary release target:** PC community first
+- **non-camera gameplay inputs:** future work, not current parity promises
+- **mouse/touch:** valid for UI navigation, not gameplay parity claims
+
+## Repository details
+
+- **Type:** Assembly (Game Client)
+- **License:** **GNU GPLv3** (Strict Copyleft)
+- **Primary dependency contract:** `addons.jsonc` at repo root
+- **Current concrete dependencies:**
+  - `aerobeat-input-core` pinned at `v0.1.2`, installed at addon key/path `aerobeat-input-core`
+  - `aerobeat-input-mediapipe-python`, installed through the compatibility addon directory key `aerobeat-input-mediapipe`
+  - `openclaw` installed from the upstream Godot addon subtree for local tooling/runtime integration
+  - `gut` for repo-local validation
+
+## Runtime truth
+
+This assembly currently boots the **camera-first MediaPipe Python path**. It does **not** claim equal-status keyboard, gamepad, JoyCon, touch, mouse, or XR gameplay support.
+
+The MediaPipe Python sidecar remains a separate runtime concern from the Godot addon manifest:
+
+- `addons.jsonc` restores the Godot addon/plugin dependency layout
+- Python + MediaPipe runtime dependencies still need to exist wherever the assembly is run
+- build/distribution scripts in this repo are specifically about packaging that camera-sidecar runtime for PC community experimentation and proofing
 
 ## GodotEnv assembly flow
 
@@ -60,31 +81,32 @@ godot --headless --path . --script addons/gut/gut_cmdln.gd \
   -gexit
 ```
 
-## Scoped migration note: deferred `aerobeat-input-mediapipe-python`
+## Compatibility note: current MediaPipe install key
 
-This assembly has one intentionally scoped exception during Batch 5.
+One compatibility edge is still explicit in this repo:
 
-- The assembly code still expects the installed addon path `res://addons/aerobeat-input-mediapipe/`.
-- The owning repo is still `aerobeat-input-mediapipe-python`, which Derrick explicitly asked to keep out of this migration wave until its own dedicated plan.
-- Because that repo has not been given a dedicated release/tagging cleanup yet, this assembly manifest keeps it on `checkout: "main"` and installs it through the compatibility directory key `aerobeat-input-mediapipe`.
-- That means Batch 5 migrates the assembly repo onto the root-manifest GodotEnv flow, but it does **not** claim that the MediaPipe Python dependency is already fully normalized/released.
+- the assembly code currently loads the addon from `res://addons/aerobeat-input-mediapipe/`
+- the owning repo still lives at `aerobeat-input-mediapipe-python`
+- the manifest therefore installs that repo through the compatibility directory key `aerobeat-input-mediapipe`
 
-This is deliberate and temporary, not hidden debt.
+That is current repo truth, not a claim that the dependency contract is fully normalized yet.
 
 ## Validation notes
 
 - `addons.jsonc` is the committed assembly dependency contract.
-- The assembly now mounts its input foundation at `res://addons/aerobeat-input-core/`.
-- That addon path is sourced from `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git` pinned to `v0.1.0`.
-- `aerobeat-input-mediapipe-python` remains intentionally deferred and is consumed here through the compatibility install key `aerobeat-input-mediapipe` on `main` until its dedicated migration/release work exists.
-- `addons/` is a generated install target and must not be committed.
-- Repo-local tests live under `tests/` and run against the root assembly project.
+- the assembly now mounts its input foundation at `res://addons/aerobeat-input-core/`
+- that input-core addon path is sourced from `git@github.com:AeroBeat-Workouts/aerobeat-input-core.git` pinned to `v0.1.2`
+- `aerobeat-input-mediapipe-python` is the official gameplay-input dependency for this assembly today
+- `openclaw` is intentionally installed from its addon subtree so the project receives `res://addons/openclaw/` instead of the repo root helper/tooling folders
+- `addons/` is a generated install target and must not be committed
+- repo-local tests live under `tests/` and run against the root assembly project
 
-## 📂 Structure
+## Structure
 
-*   `addons.jsonc` - Root GodotEnv assembly manifest.
-*   `project.godot` - Runnable AeroBeat app.
-*   `src/` - Assembly-specific game logic.
-*   `scenes/` - Root scenes for the assembly app.
-*   `tests/` - Repo-local GUT and integration tests.
-*   `build-scripts/` - Distribution packaging scripts.
+- `addons.jsonc` - Root GodotEnv assembly manifest
+- `project.godot` - Runnable AeroBeat assembly project
+- `src/` - Assembly-specific game/runtime logic
+- `scenes/` - Root scenes for the assembly app
+- `tests/` - Repo-local GUT and integration tests
+- `build-scripts/` - PC bundle/build experiments for the camera-first assembly runtime
+- `docs/` - Repo-local technical notes for build/distribution work

@@ -136,7 +136,7 @@ echo " / ___ |/ /  / /_/ / /_/ / /_/ /  /  __/ /_  "
 echo "/_/  |_/_/   \__, /_____/_____/   \___/\__/  "
 echo "           /____/                            "
 echo -e "${NC}"
-echo -e "${BOLD}Air Drumming Game - Linux Bundle${NC}"
+echo -e "${BOLD}PC Community Camera Build - Linux Bundle${NC}"
 echo ""
 
 # Step 1: Set up Python environment

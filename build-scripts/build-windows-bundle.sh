@@ -146,7 +146,7 @@ application/file_version=""
 application/product_version=""
 application/company_name="AeroBeat"
 application/product_name="AeroBeat"
-application/file_description="Air Drumming Game"
+application/file_description="Camera-first Boxing and Flow community build"
 application/copyright=""
 application/trademarks=""
 application/export_angle=0
@@ -246,13 +246,13 @@ cp "${PROJECT_ROOT}/build-scripts/templates/run.bat" "${BUNDLE_DIR}/run.bat"
 
 # Create README
 cat > "${BUNDLE_DIR}/README.txt" << 'EOF'
-AeroBeat - Air Drumming Game (Windows)
+AeroBeat - PC Community Camera Build (Windows)
 ======================================
 
 Quick Start:
 1. Double-click run.bat to start the game
 2. Allow camera access when prompted
-3. Start drumming in the air!
+3. Start the camera-first workout session!
 
 Command Line Options:
   run.bat --mock          # Test without camera
@@ -269,7 +269,7 @@ Troubleshooting:
 - If game won't start, install Visual C++ Redistributables
 - For performance issues, close other applications
 
-For more help: https://github.com/AeroBeat/docs
+For more help: https://github.com/AeroBeat-Workouts/aerobeat-assembly-community
 EOF
 
 echo -e "${GREEN}✓ Launcher and README created${NC}"

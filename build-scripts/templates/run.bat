@@ -8,7 +8,7 @@ REM   - Starts Python sidecar (MediaPipe server)
 REM   - Launches Godot game
 REM   - Cleans up sidecar on exit
 REM
-title AeroBeat - Air Drumming Game
+title AeroBeat - PC Community Camera Build
 
 REM Configuration
 set "USE_MOCK=false"
@@ -79,7 +79,7 @@ echo  / ___ ^|/ /  / /_/ / /_/ / /_/ /  /  __/ /_
 echo /_/  ^|_/_/   \__, /_____/_____/   \___/\__/  
 echo            /____/                            
 echo.
-echo Air Drumming Game - Windows Bundle
+echo PC Community Camera Build - Windows Bundle
 echo.
 
 REM Step 1: Set up Python environment
