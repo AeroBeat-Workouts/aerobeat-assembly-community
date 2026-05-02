@@ -1,7 +1,7 @@
 # aerobeat-assembly-community
 
 **Date:** 2026-05-01  
-**Status:** Complete  
+**Status:** In Progress  
 **Agent:** Chip 🐱‍💻
 
 ---
@@ -61,6 +61,7 @@ The repo also already had truthful local dirt: the old root build-distribution i
 - `build-scripts/templates/run.bat`
 - `docs/build-distribution-system.md`
 - `INVESTIGATION-build-distribution.md` (deleted in favor of the repo-local `docs/` copy)
+- `scripts/restore-addons.sh`
 - `.plans/2026-05-01-assembly-community-downscope-alignment.md`
 
 **Status:** ✅ Complete
@@ -70,15 +71,16 @@ The repo also already had truthful local dirt: the old root build-distribution i
 - Added `docs/build-distribution-system.md` as the repo-local truthful packaging note for the active PC community assembly. Updated it so Linux is framed as the current main PC packaging path while Windows/macOS remain bundle experiments / future validation surfaces rather than equal-status release claims. Kept the older investigation doc out of the active docs path so it no longer acts like the primary repo-facing build note. Validated against `REF-04` and `REF-06`.
 - Normalized runtime/build copy across the launcher/build scripts so the repo no longer presents itself as an “air drumming” app. The Linux/Windows/macOS bundle readmes, Windows metadata string, shell/batch launcher banners, and macOS camera-permission wording now describe a **camera-first Boxing and Flow community build/proof path** instead.
 - Kept the existing MediaPipe compatibility-install truth explicit in repo docs rather than claiming the dependency naming has already been fully normalized.
-- Installed addon dependencies with `godotenv addons install`, imported the root Godot project successfully, and re-ran the repo GUT suite against `res://tests`. The suite now passes overall after aligning onto the updated `origin/main` dependency/runtime state; remaining notes are warnings/risk markers rather than failures: one `test_cleanup_on_exit` case is marked risky because it does not assert, Godot warns about a nested repro project under `repros/linux-close-minimal`, and duplicate UIDs are reported between `aerobeat-input-core` and the still-present generated `aerobeat-core` addon tree. Those observations were recorded, but they do not block this pass.
+- Added a narrow repo-local restore wrapper at `scripts/restore-addons.sh` and switched the README restore step to that script. The wrapper truthfully fixes the assembly's repeatable restore hygiene by deleting the disposable/generated `addons/` and `.addons/` trees before rerunning `godotenv addons install`. This is necessary because the current upstream addon set still reproduces Godot 4.4 `.uid` dirtiness (`aerobeat-input-mediapipe` is missing committed `src/input_provider.gd.uid`, `src/process/desktop_sidecar_launcher.gd.uid`, and `src/runtime/desktop_sidecar_runtime.gd.uid`; `openclaw` is missing committed `mcp_bridge.gd.uid`), so raw `godotenv addons install` still aborts after import/test runs.
+- Revalidated the root assembly twice through the repeatable repo-local flow: `./scripts/restore-addons.sh` → `godot --headless --path . --import` → `godot --headless --path . --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`, then the same sequence again. Both passes succeeded. Remaining notes are warnings/risk markers rather than failures: one `test_cleanup_on_exit` case is marked risky because it does not assert, and Godot still warns about a nested repro project under `repros/linux-close-minimal` plus leaked/unfreed objects during teardown.
 
 ---
 
 ## Final Results
 
-**Status:** ✅ Complete
+**Status:** ⚠️ Partial
 
-**What We Built:** A truthful downscope-aligned repo surface for the active PC community assembly. README, build/distribution docs, bundle/readme/runtime copy, and the carried local cleanup now match the locked product story: camera-first gameplay, Boxing + Flow, PC community first, and honest current dependency/runtime caveats.
+**What We Built:** A truthful downscope-aligned repo surface for the active PC community assembly, plus a narrow repo-local repeatable restore flow for today's dependency reality. README, build/distribution docs, bundle/readme/runtime copy, and the carried local cleanup now match the locked product story: camera-first gameplay, Boxing + Flow, PC community first, honest current dependency/runtime caveats, and a documented restore wrapper that safely reacquires disposable addon trees after import/test runs.
 
 **Reference Check:**
 - `REF-04` satisfied: repo now reflects the locked docs landing scope and PC community priority.
@@ -88,21 +90,31 @@ The repo also already had truthful local dirt: the old root build-distribution i
 
 **Validation:**
 - ✅ `bash -n build-scripts/build-linux-bundle.sh build-scripts/build-macos-bundle.sh build-scripts/build-windows-bundle.sh build-scripts/templates/run.sh`
-- ✅ `godotenv addons install`
-  - one retry required after clearing a locally modified generated addon install (`addons/aerobeat-input-mediapipe` / `.addons/aerobeat-input-mediapipe`) so GodotEnv could refresh it cleanly
+- ✅ `./scripts/restore-addons.sh`
 - ✅ `godot --headless --path . --import`
 - ✅ `godot --headless --path . --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`
-  - suite result: 10 passing tests, 1 risky/pending test (`test_cleanup_on_exit` does not assert), warnings about nested repro detection and duplicate addon UIDs between installed `aerobeat-input-core` and `aerobeat-core` trees
+  - suite result: 10 passing tests, 1 risky/pending test (`test_cleanup_on_exit` does not assert), plus warnings about the nested repro detection under `repros/linux-close-minimal` and leaked/unfreed objects during test teardown.
+- ✅ Repeated full-cycle proof: `./scripts/restore-addons.sh` → import → GUT → `./scripts/restore-addons.sh` → import → GUT completed successfully end-to-end.
+- ✅ Root-cause repro remains truthful: from the normal post-import generated state, raw `godotenv addons install` still fails because ignored generated `.uid` files inside installed addons are treated as local modifications.
+  - reproduced on `aerobeat-input-mediapipe` via `src/input_provider.gd.uid`, `src/process/desktop_sidecar_launcher.gd.uid`, and `src/runtime/desktop_sidecar_runtime.gd.uid`
+  - `openclaw` still lacks committed `mcp_bridge.gd.uid`, so it remains a second source-level hazard once the MediaPipe dirtiness is cleared
 
 **Commits:**
-- `da52ab3` - Align assembly-community with downscoped PC camera-first truth
+- `3a3b304` - Align assembly-community with downscoped PC camera-first truth
 
-**QA Handoff Notes:**
-- Verify the repo surfaces now read as the active **PC community camera-first assembly** and no longer market themselves as “air drumming”.
-- Spot-check bundle/readme/runtime copy in `build-scripts/` and `docs/build-distribution-system.md` for the new Boxing + Flow / camera-first language.
-- Validation passed, but QA should keep an eye on the non-blocking signals seen during coder validation: one risky cleanup test with no assertions, nested repro detection under `repros/linux-close-minimal`, and duplicate addon UID warnings from the generated `aerobeat-core` / `aerobeat-input-core` trees.
+**QA Review Update (2026-05-01):**
+- **Result:** ❌ Initial QA failed, then coder follow-up landed a repo-local repeatability fix for recheck.
+- **Truth alignment verified:** README, `docs/build-distribution-system.md`, `addons.jsonc`, `project.godot`, launcher/build-script copy, and integration-test intent all align with the locked docs truth for camera-only Boxing + Flow on PC community first.
+- **Stale wording spot-check:** no stale “air drumming” language remains in the inspected README/build/docs/runtime surfaces; remaining hits are only in this plan’s historical prose.
+- **Blocking defect found:** the repo’s primary documented restore command (`godotenv addons install`) was not safely repeatable after import/test runs because generated ignored addon `.uid` files caused GodotEnv to abort addon replacement.
+- **Coder follow-up fix:** the documented repo-local restore flow now runs through `./scripts/restore-addons.sh`, which clears disposable/generated `addons/` and `.addons/` state before reacquiring manifest-defined dependencies. This keeps the assembly usable and repeatable without pretending the current upstream addon sources are already clean.
+- **Residual upstream/source truth:** raw `godotenv addons install` still fails after import/test because `aerobeat-input-mediapipe` and `openclaw` do not yet ship every required `.uid` file in source. That remains the source-level fix path, but it no longer blocks this repo’s documented restore flow.
+- **Warning assessment:**
+  - `test_cleanup_on_exit` lacking an assertion is **not** itself a release blocker, but it leaves cleanup behavior unverified and likely masks the teardown leak warning.
+  - nested repro project warning under `repros/linux-close-minimal` is **not** blocking for this pass.
+  - duplicate addon UID warnings from the compatibility/generated addon trees are **not** the blocking issue here.
 
-**Lessons Learned:** This repo is truth-critical because it sits on the active assembly path. Even “docs-only” cleanup touches runtime credibility here: stale bundle/readme copy and transition-language can silently contradict the locked product scope just as much as a bad manifest can.
+**Lessons Learned:** This repo is truth-critical because it sits on the active assembly path. Even “docs-only” cleanup touches runtime credibility here: stale bundle/readme copy and transition-language can silently contradict the locked product scope just as much as a bad manifest can, and validation claims should distinguish between clean-install success, repeatable repo-local restore success, and the still-separate upstream source hygiene needed to eliminate raw `godotenv addons install` dirtiness altogether.
 
 ---
 

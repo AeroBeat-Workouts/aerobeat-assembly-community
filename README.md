@@ -51,8 +51,16 @@ The repo root is the real runnable project. Restore dependencies into `addons/`,
 From the repo root:
 
 ```bash
-godotenv addons install
+./scripts/restore-addons.sh
 ```
+
+This repo's repeatable restore flow intentionally clears the generated `addons/`
+and `.addons/` install targets before reacquiring them from `addons.jsonc`.
+That is necessary because the current upstream addon set still contains missing
+Godot 4.4-generated `.uid` files (reproduced here under
+`aerobeat-input-mediapipe` and `openclaw`), so rerunning raw
+`godotenv addons install` after import/test runs can abort on dirty installed
+addon trees.
 
 ### Open the assembly
 
