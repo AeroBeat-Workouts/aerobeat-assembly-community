@@ -89,7 +89,7 @@ The repo also already had truthful local dirt: the old root build-distribution i
 - Deliberate non-deviation note: the manifest and assembly runtime still expose the current `aerobeat-core` + `aerobeat-input-mediapipe-python` compatibility state, but the repo now documents that plainly instead of treating it as already normalized.
 
 **Validation:**
-- ✅ `bash -n build-scripts/build-linux-bundle.sh build-scripts/build-macos-bundle.sh build-scripts/build-windows-bundle.sh build-scripts/templates/run.sh`
+- ✅ `bash -n build-scripts/build-linux-bundle.sh build-scripts/build-macos-bundle.sh build-scripts/build-windows-bundle.sh build-scripts/build-test.sh build-scripts/templates/run.sh scripts/restore-addons.sh`
 - ✅ `./scripts/restore-addons.sh`
 - ✅ `godot --headless --path . --import`
 - ✅ `godot --headless --path . --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`
@@ -102,6 +102,7 @@ The repo also already had truthful local dirt: the old root build-distribution i
 **Commits:**
 - `3a3b304` - Align assembly-community with downscoped PC camera-first truth
 - `8852130` - Fix repeatable addon restore flow
+- `d23f938` - Propagate restore wrapper contract
 
 **QA Review Update (2026-05-01):**
 - **Result:** ❌ Initial QA failed, then coder follow-up landed a repo-local repeatability fix for recheck.
@@ -114,6 +115,49 @@ The repo also already had truthful local dirt: the old root build-distribution i
   - `test_cleanup_on_exit` lacking an assertion is **not** itself a release blocker, but it leaves cleanup behavior unverified and likely masks the teardown leak warning.
   - nested repro project warning under `repros/linux-close-minimal` is **not** blocking for this pass.
   - duplicate addon UID warnings from the compatibility/generated addon trees are **not** the blocking issue here.
+
+**QA Recheck Update (2026-05-01, post-fix):**
+- **Result:** ✅ Recheck passed for this repo pass.
+- **Documented restore flow verified:** README now points to `./scripts/restore-addons.sh`, and that wrapper matches the current repo truth by clearing disposable `addons/` + `.addons/` before reacquiring manifest-defined addons.
+- **Truth alignment re-spot-check:** `README.md`, `docs/build-distribution-system.md`, `addons.jsonc`, `project.godot`, and launcher/build-script text still match the locked docs stance: camera-only gameplay input, Boxing + Flow, and PC community first.
+- **Repeatability proof rerun:** I independently ran `./scripts/restore-addons.sh` → `godot --headless --path . --import` → `godot --headless --path . --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit` twice in a row. Both cycles succeeded.
+- **Observed validation result:** each GUT pass finished with `11` tests total, `10` passing, `1` risky/pending (`test_cleanup_on_exit` did not assert), and `2` warnings about unfreed children/object cleanup during teardown.
+- **Raw reinstall regression still reproduced:** after an import/test cycle, plain `godotenv addons install` still fails on dirty generated addon state in `aerobeat-input-mediapipe` (`src/input_provider.gd.uid`, `src/process/desktop_sidecar_launcher.gd.uid`, `src/runtime/desktop_sidecar_runtime.gd.uid`). That upstream source hygiene issue remains real, but the repo-local wrapper successfully contains it for this assembly.
+- **Current blocker assessment:** the previous blocker is resolved at the assembly repo level because the documented restore path is now repeatable. Remaining warnings are follow-up quality items, not blockers for this bead recheck.
+- **Beads note:** `bd update oc-rqa --status in_progress --json` currently hits a local Beads identity mismatch (`metadata.json project_id` vs database `_project_id`), so the QA status update had to be recorded in this plan instead of the bead metadata.
+
+**Auditor Update (2026-05-01):**
+- **Result:** ❌ Audit failed; bead stays open.
+- **Independent validation rerun:** I reran the documented flow myself — `./scripts/restore-addons.sh` → `godot --headless --path . --import` → `godot --headless --path . --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit` — twice in a row. Both cycles succeeded, reproducing the same `11` tests / `10` passing / `1` risky pattern and the same teardown/object-leak warnings.
+- **Product-contract truth check:** README and `scripts/restore-addons.sh` correctly establish the wrapper-based restore flow as the repo-local contract, and raw `godotenv addons install` still truthfully fails after import/test on dirty generated addon `.uid` state.
+- **Blocking gap found:** several non-README repo surfaces still encode the old raw-install contract instead of the wrapper contract:
+  - `build-scripts/build-test.sh` still restores with raw `godotenv addons install`
+  - `.github/workflows/gut_ci.yml` still runs raw `godotenv addons install`
+  - `build-scripts/build-linux-bundle.sh`, `build-scripts/build-macos-bundle.sh`, and `build-scripts/build-windows-bundle.sh` still tell operators to run raw `godotenv addons install` when addons are missing
+  - `tests/integration/test_full_pipeline.gd` still documents the old raw-install assumption in comments
+- **Why this blocks closure:** this bead was explicitly re-opened to make the wrapper-based restore flow the truthful repo-local contract. That contract is fixed in README, but it is not yet propagated across the remaining build/validation/operator surfaces, so the repo still gives contradictory instructions depending on which entrypoint someone uses.
+- **Warning assessment:**
+  - `test_cleanup_on_exit` lacking an assertion is **not blocking** for this bead; it is a weak test, not evidence that the repeatable restore contract is broken.
+  - nested repro warning for `repros/linux-close-minimal` is **not blocking**; it is known editor scan noise.
+  - teardown/unfreed-object warnings are **not blocking for this bead** because the documented restore flow and root validation path still complete successfully, but they remain worth separate follow-up.
+- **Repo cleanliness:** after the audit rerun, `git status --short` showed only this plan file modified; generated addon trees remained untracked/ignored as expected.
+
+**Coder Follow-up Update (2026-05-01, post-audit contract propagation):**
+- **Result:** ✅ Narrow follow-up fix landed; bead remains open for QA/audit recheck.
+- **Exact stale surfaces updated:**
+  - `build-scripts/build-test.sh` now restores through `./scripts/restore-addons.sh` instead of raw `godotenv addons install`
+  - `.github/workflows/gut_ci.yml` now restores through `./scripts/restore-addons.sh`
+  - `build-scripts/build-linux-bundle.sh` now tells operators to run `./scripts/restore-addons.sh` from the repo root when the installed addon tree is missing
+  - `build-scripts/build-macos-bundle.sh` now tells operators to run `./scripts/restore-addons.sh` from the repo root when the installed addon tree is missing
+  - `build-scripts/build-windows-bundle.sh` now tells operators to run `./scripts/restore-addons.sh` from the repo root when the installed addon tree is missing
+  - `tests/integration/test_full_pipeline.gd` comments now describe the wrapper-based restore contract
+- **Validation rerun after propagation:**
+  - `bash -n build-scripts/build-linux-bundle.sh build-scripts/build-macos-bundle.sh build-scripts/build-windows-bundle.sh build-scripts/build-test.sh build-scripts/templates/run.sh scripts/restore-addons.sh` ✅
+  - `./scripts/restore-addons.sh` → `godot --headless --path . --import` → `godot --headless --path . --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit` ✅
+  - repeated second full cycle of the same wrapper/import/GUT flow ✅
+- **Observed rerun output:** both GUT passes again finished with `11` tests total, `10` passing, `1` risky/pending (`test_cleanup_on_exit` did not assert), and `2` warnings about unfreed children/object cleanup during teardown. The nested `repros/linux-close-minimal` project warning and the ObjectDB leak warning still reproduce during import/teardown, but they do not break the documented restore/import/GUT contract.
+- **QA handoff:** the wrapper-based restore contract is now propagated across the stale build/CI/comment surfaces that the audit flagged, so this repo is ready for QA recheck.
+- **Beads note:** direct `bd update oc-rqa --status in_progress --json` still hits the local Beads identity mismatch unless the environment skips the identity check, so the follow-up state is recorded here in the plan instead of closing or mutating the bead.
 
 **Lessons Learned:** This repo is truth-critical because it sits on the active assembly path. Even “docs-only” cleanup touches runtime credibility here: stale bundle/readme copy and transition-language can silently contradict the locked product scope just as much as a bad manifest can, and validation claims should distinguish between clean-install success, repeatable repo-local restore success, and the still-separate upstream source hygiene needed to eliminate raw `godotenv addons install` dirtiness altogether.
 

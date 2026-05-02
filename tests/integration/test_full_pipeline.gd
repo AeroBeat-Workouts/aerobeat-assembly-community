@@ -9,7 +9,7 @@ var provider: AeroInputProvider
 
 func before_each() -> void:
     # This test requires the full setup:
-    # 1. addons.jsonc restored into addons/ via godotenv addons install
+    # 1. addons.jsonc restored into addons/ via ./scripts/restore-addons.sh
     # 2. aerobeat-input-mediapipe currently arrives through addons/aerobeat-input-mediapipe
     # 3. Python-side runtime success remains environment-dependent
     main = preload("res://scenes/main.tscn").instantiate()

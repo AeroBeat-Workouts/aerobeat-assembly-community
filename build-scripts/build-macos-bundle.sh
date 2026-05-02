@@ -26,7 +26,7 @@ ADDON_ROOT="${PROJECT_ROOT}/addons/aerobeat-input-mediapipe"
 BUILD_DIR="${PROJECT_ROOT}/build"
 DIST_DIR="${PROJECT_ROOT}/dist"
 if [ ! -d "${PROJECT_ROOT}/addons/aerobeat-input-mediapipe" ]; then
-    echo "Error: addons/aerobeat-input-mediapipe is missing. Run godotenv addons install from the repo root first."
+    echo "Error: addons/aerobeat-input-mediapipe is missing. Run ./scripts/restore-addons.sh from the repo root first."
     exit 1
 fi
 

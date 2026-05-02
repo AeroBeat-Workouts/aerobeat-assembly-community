@@ -9,8 +9,8 @@ cd "$PROJECT_ROOT"
 
 echo "=== AeroBeat Assembly Community validation ==="
 
-echo "Restoring root assembly dependencies..."
-godotenv addons install
+echo "Restoring root assembly dependencies via repo-local wrapper..."
+./scripts/restore-addons.sh
 
 echo "Importing root project..."
 godot --headless --path . --import

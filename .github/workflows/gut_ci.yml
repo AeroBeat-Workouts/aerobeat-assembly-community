@@ -35,7 +35,7 @@ jobs:
           echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
       - name: 🔗 Restore assembly dependencies
-        run: godotenv addons install
+        run: ./scripts/restore-addons.sh
 
       - name: 🧭 Import assembly project
         run: godot --headless --path . --import

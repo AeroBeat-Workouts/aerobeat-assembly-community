@@ -58,7 +58,7 @@ check_command python3
 check_command tar
 
 if [ ! -d "${ADDON_ROOT}" ]; then
-    log_error "Installed MediaPipe addon is missing at ${ADDON_ROOT}. Run 'godotenv addons install' first."
+    log_error "Installed MediaPipe addon is missing at ${ADDON_ROOT}. Run './scripts/restore-addons.sh' from the repo root first."
     exit 1
 fi
 
