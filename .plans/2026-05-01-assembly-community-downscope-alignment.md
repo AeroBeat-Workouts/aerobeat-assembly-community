@@ -102,7 +102,7 @@ The repo also already had truthful local dirt: the old root build-distribution i
 **Commits:**
 - `3a3b304` - Align assembly-community with downscoped PC camera-first truth
 - `8852130` - Fix repeatable addon restore flow
-- `d23f938` - Propagate restore wrapper contract
+- `910b4f0` - Propagate restore wrapper contract
 
 **QA Review Update (2026-05-01):**
 - **Result:** ❌ Initial QA failed, then coder follow-up landed a repo-local repeatability fix for recheck.
