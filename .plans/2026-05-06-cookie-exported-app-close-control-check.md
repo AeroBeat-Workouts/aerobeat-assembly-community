@@ -435,6 +435,61 @@ Exact next step for Derrick: on Cookie, reopen the assembly project in the edito
 
 ---
 
+### Task 13: Repair assembly input-core contract mismatch against current MediaPipe adapter
+
+**Bead ID:** `oc-a4j`  
+**SubAgent:** `primary`  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-02`  
+**Prompt:** Claim the assigned bead on start. Diagnose and repair the `aerobeat-input-core` contract mismatch now blocking assembly open on Cookie. The current evidence shows assembly is still consuming an older `boxing_input.gd` surface with names like `block_start` / `knee_strike_left` / `leg_lift_left`, while the MediaPipe adapter now expects `guard_start` / `knee_left` / `leg_lift_left_start`. Identify the correct input-core version/commit to use, repin assembly if needed, refresh Cookie, and verify the parse blocker is gone.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+- assembly addon config/install state
+- input-core repo only if an owner-side fix is genuinely required
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+- `addons.jsonc` if repinning is required
+- Any owner-repo files only if needed for the fix
+
+**Status:** ✅ Complete
+
+**Results:** Root cause confirmed as a release/pin drift, not an assembly-local script bug. The assembly manifest was still pinned to `aerobeat-input-core` tag `v0.1.2`, and that release still ships the older `src/interfaces/boxing_input.gd` contract (`block_start`, `block_end`, `knee_strike_left/right`, `leg_lift_left/right`). The currently mounted MediaPipe adapter in assembly already expects the newer gameplay-intent contract (`guard_start/end`, `squat_*`, `lean_*`, `sidestep_*`, `knee_left/right`, `leg_lift_*_start/end`). In the owner repo, the needed contract already existed on `main` in commits `96908ab` (`Define v1 gameplay intent contract`) and `3ab8d94` (`Align slice B flow and knee intent contract`), but no release tag exposed that contract to tagged consumers. That made the truthful fix owner-side release work plus a consumer repin, not a consumer-side patch.
+
+Exact fix applied:
+- `aerobeat-input-core`: bumped `plugin.cfg` version from `0.1.2` to `0.1.3`, committed/pushed `31f1b02` (`Bump input-core plugin version to 0.1.3`), then tagged/pushed `v0.1.3` from that corrected `HEAD` so the current gameplay-intent contract is available to consumers.
+- `aerobeat-assembly-community`: updated `addons.jsonc` to pin `aerobeat-input-core` from `v0.1.2` to `v0.1.3`.
+
+Validation completed in both local and Cookie consumer states:
+- Before the fix, local headless import reproduced the exact parse cascade in `.qa-logs/oc-a4j-before-import.log`, including `Identifier "guard_start" not declared in the current scope`, `Identifier "knee_left" not declared in the current scope`, and `Failed to load script "res://src/main.gd" with error "Parse error"`.
+- After tagging `v0.1.3`, a full local addon restore via `./scripts/restore-addons.sh` reinstalled `aerobeat-input-core` from branch/tag `v0.1.3`; the installed payload now reports `plugin.cfg` version `0.1.3` and the mounted `boxing_input.gd` contains `signal guard_start`, `signal knee_left(power: float)`, and `signal leg_lift_left_start`. A fresh local `godot --headless --path . --import --quit --verbose --log-file .qa-logs/oc-a4j-after-import-local.log` produced no parse/compile/load-script errors.
+- Cookie refresh: synced the repinned `addons.jsonc` plus the refreshed mounted addon payload/caches to Cookie after the target machine’s broad `godotenv addons install` path stalled in unrelated dependency reinstall noise. On Cookie, the installed `addons/aerobeat-input-core/src/interfaces/boxing_input.gd` now also contains `guard_start`, `knee_left`, and `leg_lift_left_start`, and a fresh headless import log at `.qa-logs/oc-a4j-cookie-import-full.log` reports **no** `Parse Error`, `Compile Error`, or `Failed to load script` entries. The original `guard_start` / `knee_left` family blocker is gone on Cookie.
+
+Exact next step for Derrick: reopen assembly-community on Cookie with `/home/derrick/.local/bin/godot --editor --path /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community` and verify the project now opens past the previous MediaPipe/input-core parse wall so Task 14 can audit any remaining non-contract blockers.
+
+---
+
+### Task 14: Audit editor-open readiness after input-core contract repair
+
+**Bead ID:** `oc-leg`  
+**SubAgent:** `primary`  
+**Role:** `auditor`  
+**References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`  
+**Prompt:** Claim the assigned bead on start. Audit the input-core contract repair and confirm whether Cookie should now be able to reopen assembly-community without the current `guard_start`/`knee_left`-family parse cascade. Record any remaining blockers precisely.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+
+**Status:** ⏳ Pending
+
+**Results:** Pending.
+
+---
+
 ## Final Results
 
 **Status:** ⚠️ Partial
