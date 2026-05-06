@@ -344,6 +344,91 @@ Net effect: Cookie now has a clean regenerated assembly addon tree sourced from 
 **Files Created/Deleted/Modified:**
 - `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
 
+**Status:** ✅ Complete
+
+**Results:** Audit verdict: **ready to proceed**. Tasks 8 and 9 removed the two most credible non-engine confounders before another Cookie editor retest: (1) the stray `.gastown-ignore` was traced to Cookie’s interactive Gastown shell hook rather than a mystery background worker, then neutralized by disabling Gastown in `~/.local/state/gastown/state.json` and verifying a fresh interactive shell no longer recreates the file; and (2) the assembly open failure after setup was traced to a real addon mount-path bug plus stale addon pinning, then repaired by landing owner-repo commit `efabe54` (`Make sidecar helpers mount-path agnostic`), pinning assembly `addons.jsonc` to `efabe5451dc2af9788c4dc0b3bef0d85805dd0ae` in commit `d0fc7b9` (`Pin MediaPipe addon to mount-path fix`), and regenerating Cookie’s addon tree via `./scripts/restore-addons.sh`.
+
+That means Derrick can now reopen `aerobeat-assembly-community` on Cookie and continue the editor retest ladder from a **clean-enough baseline**. The prior open blocker is gone, the Gastown prompt side effect is out of the repo path for now, and today’s earlier exported-build checks were already clean. The remaining uncertainty is now back where it belongs: the editor-playback close path itself.
+
+**Blocking issues:** none from the audited evidence.
+
+**Non-blocking caveats:**
+- Keep Gastown disabled on Cookie during this isolation pass; re-enabling it could reintroduce `.gastown-ignore` prompt side effects.
+- Cookie’s `aerobeat-input-mediapipe-python` repo is still behind local by one **plans-only** commit and still uses an HTTPS remote; neither affects today’s retest signal.
+- Cookie may still show benign fast-exit headless-editor noise (`Detected another project.godot`, scan-thread abort on quick quit, ObjectDB leak warning). Those were not the prior open blocker and should not be confused with the destructive close symptom.
+- Use only normal human close routes for truth testing; avoid `xdotool windowclose`.
+
+**Exact next-step checklist for Derrick on Cookie:**
+1. In a fresh Cookie shell, confirm Gastown stays out of the way by simply working from the repo normally; do not re-enable Gastown before the retest.
+2. Open assembly-community with the matched editor wrapper:
+   - `/home/derrick/.local/bin/godot --editor --path /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community`
+3. Run the same proving-scene/editor playback path used in the earlier close-crash investigation.
+4. Let the scene fully reach its normal ready/running state, including the expected MediaPipe/camera startup behavior.
+5. Close the running app with a normal human close route only:
+   - first pass: titlebar **X**
+   - optional comparison pass: **Alt+F4**
+6. Record the exact outcome: clean close, hang, `BadWindow`/window-manager noise, editor death, or host destabilization.
+7. **Only if assembly-community now closes cleanly**, continue to the second ladder rung:
+   - `/home/derrick/.local/bin/godot --editor --path /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-input-mediapipe-python`
+8. Run the closest equivalent plugin-side editor isolation path Derrick has been using, then close it the same human way and record the outcome.
+9. Interpret the branch point:
+   - assembly fails / plugin clean => suspect stays centered on assembly-community editor-playback teardown
+   - both clean => prior failure was likely transient/editor-state-specific and is no longer reproduced
+   - both fail => suspect widens back toward shared Cookie editor/runtime/host behavior
+
+Bottom line: **yes, Derrick should proceed with reopening assembly-community on Cookie now**; the remaining issues are caveats, not blockers.
+
+---
+
+### Task 11: Repair remaining detector/provider mount-path assumptions in MediaPipe addon
+
+**Bead ID:** `oc-upq`  
+**SubAgent:** `primary`  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-02`  
+**Prompt:** Claim the assigned bead on start. Fix the remaining `aerobeat-input-mediapipe-python` detector/provider scripts that still hardcode `res://addons/aerobeat-input-mediapipe-python/...` so the addon works when mounted in assembly as `res://addons/aerobeat-input-mediapipe/`. Repin any affected consumer manifest, sync Cookie if needed, and verify the previous pose-detector parse blocker is gone.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+- MediaPipe addon source files under `src/`
+- assembly consumer addon pin/config only if needed
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+- Relevant `aerobeat-input-mediapipe-python/src/...` files
+- `addons.jsonc` if repinning is required
+
+**Status:** ✅ Complete
+
+**Results:** Root cause was a second wave of owner-repo mount-path assumptions that survived the earlier sidecar-helper repair. `src/providers/mediapipe_provider.gd` and `src/detectors/pose_detector_substrate.gd` still preloaded detector dependencies through the owner-only mount key `res://addons/aerobeat-input-mediapipe-python/...`, which parses in the repo-local `.testbed` but breaks when the assembly mounts the addon under `res://addons/aerobeat-input-mediapipe/`. Once the first sidecar/runtime fix landed, the next Cookie blocker moved to these detector/provider preloads.
+
+Repair applied in the owner repo: removed the remaining hardcoded detector preloads and let the scripts resolve sibling detector classes through their registered script classes instead of owner-path literals. Landed and pushed in `../aerobeat-input-mediapipe-python` as commit `80ed9ce` (`Make detector/provider mounts alias-safe`). Exact files fixed there: `src/providers/mediapipe_provider.gd` and `src/detectors/pose_detector_substrate.gd`.
+
+Consumer follow-through: repinned this assembly repo’s `addons.jsonc` from `efabe5451dc2af9788c4dc0b3bef0d85805dd0ae` to `80ed9ce8f6e845d619595512da3f2300f3551061`, landed/pushed as commit `35ca8e8` (`Pin MediaPipe addon to detector/provider fix`), then refreshed installed addon payloads locally and on Cookie via `./scripts/restore-addons.sh`.
+
+Validation evidence:
+- Repo-local owner check: after `cd .testbed && godotenv addons install`, headless `--check-only` parses against `addons/aerobeat-input-mediapipe-python/src/providers/mediapipe_provider.gd` and `.../src/detectors/pose_detector_substrate.gd` returned clean logs with no parse/load failures.
+- Local assembly consumer check: restored addons, confirmed `.addons/aerobeat-input-mediapipe/.git/HEAD` is `80ed9ce8f6e845d619595512da3f2300f3551061`, then ran `godot --headless --editor --path . --quit-after 1 --verbose`; the log showed no `pose_detector_substrate`, `Parse Error`, or `Failed to load script` cascade.
+- Cookie consumer check: fast-forwarded both repos, reran `./scripts/restore-addons.sh`, confirmed installed addon HEAD `80ed9ce8f6e845d619595512da3f2300f3551061`, confirmed zero remaining owner-path detector refs in installed `addons/` + `.addons/` payloads (`MATCH_PROVIDER_REF_COUNT=0`), and reran the headless editor-open probe with `TARGET_ERROR_COUNT=0`. The previous pose-detector/provider parse blocker is gone on Cookie; remaining log noise was limited to the pre-existing OpenClaw MCP port-in-use warning plus generic quick-exit scan/ObjectDB noise.
+
+Exact next step for Derrick: on Cookie, reopen the assembly project in the editor with `/home/derrick/.local/bin/godot --editor --path /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community`, run the proving-scene/editor playback path again, and then close it with a normal human close route (titlebar X first, Alt+F4 only as a comparison pass) to continue the close-crash isolation ladder from a now-fixed addon-open baseline.
+
+---
+
+### Task 12: Audit editor-open readiness after detector/provider mount-path repair
+
+**Bead ID:** `oc-9yi`  
+**SubAgent:** `primary`  
+**Role:** `auditor`  
+**References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`  
+**Prompt:** Claim the assigned bead on start. Audit the repair for the remaining MediaPipe detector/provider mount-path assumptions and confirm whether Cookie should now be able to reopen assembly-community without the earlier pose-detector preload parse cascade. Record any remaining blockers precisely.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+
 **Status:** ⏳ Pending
 
 **Results:** Pending.
