@@ -37,3 +37,6 @@ addons/*
 .dolt/
 *.db
 .beads-credential-key
+
+# Openclaw
+.qa-logs/
