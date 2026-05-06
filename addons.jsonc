@@ -16,7 +16,7 @@
     // are reproducible during Cookie retest.
     "aerobeat-input-mediapipe": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-mediapipe-python.git",
-      "checkout": "efabe5451dc2af9788c4dc0b3bef0d85805dd0ae",
+      "checkout": "80ed9ce8f6e845d619595512da3f2300f3551061",
       "subfolder": "/"
     },
     // Install only the upstream Godot addon subtree so the project receives
