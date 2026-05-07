@@ -1,7 +1,7 @@
 # AeroBeat Assembly Community
 
 **Date:** 2026-05-06  
-**Status:** Draft  
+**Status:** In Progress  
 **Agent:** Pico 🐱‍🏍
 
 ---
@@ -490,18 +490,342 @@ Exact next step for Derrick: reopen assembly-community on Cookie with `/home/der
 
 ---
 
+### Task 15: Diagnose Cookie OpenClaw Godot registration 404 spam against local-good setup
+
+**Bead ID:** `oca-b4f`  
+**SubAgent:** `primary`  
+**Role:** `research`  
+**References:** `REF-01`, `REF-02`  
+**Prompt:** Claim the assigned bead on start. Investigate the `[OpenClaw] Register failed: 0, 404` spam on Cookie when assembly opens in the editor. Compare Cookie’s OpenClaw↔Godot plugin/runtime setup against the known-good local host, identify the exact mismatch or missing endpoint, and fix the smallest safe non-engine issue if possible. Record what the 404 is actually coming from and whether Derrick needs to restart/reset anything manually.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+- `~/.openclaw/extensions/godot/` on Cookie
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+- `~/.openclaw/extensions/godot/index.ts` on Cookie
+- `~/.openclaw/extensions/godot/package.json` on Cookie
+- `~/.openclaw/extensions/godot/openclaw.plugin.json` on Cookie
+
+**Status:** ✅ Complete
+
+**Results:** Root cause confirmed with concrete local-vs-Cookie route probes and runtime state checks. The exact failing request behind Godot’s `[OpenClaw] Register failed: 0, 404` spam was `POST http://127.0.0.1:18789/godot/register` (same path as the assembly addon’s `/godot/*` connection model from `REF-02`). On the known-good local host, `curl -X POST http://127.0.0.1:18789/godot/register ...` returned `200` plus a `sessionId`, and the installed runtime extension payload existed at `~/.openclaw/extensions/godot/{index.ts,package.json,openclaw.plugin.json}` with SHA-256 hashes `5b84174b...`, `8b8c07ec...`, and `291a30dc...`. On Cookie, the same probe returned raw `HTTP/1.1 404 Not Found`, and `~/.openclaw/extensions/godot/` was missing entirely before the fix, so the gateway had no Godot route owner loaded. Cookie’s `openclaw gateway status` still showed the gateway itself healthy on `127.0.0.1:18789`; the problem was not the port/process, it was the absent host-side Godot extension payload.
+
+Smallest safe fix applied on Cookie: copied the exact known-good local extension payload into `~/.openclaw/extensions/godot/`, verified the copied files were byte-identical by SHA-256, then restarted the gateway with `openclaw gateway restart`. Post-restart validation is clean and specific: Cookie now returns `HTTP/1.1 200 OK` for `POST /godot/register`, and `/tmp/openclaw/openclaw-2026-05-06.log` logs `[Godot] Plugin loaded - HTTP endpoints at /godot/*` followed by a successful probe registration (`[Godot] Registered: probe (x) - Session: ...`). The gateway also reports `plugins.allow is empty; discovered non-bundled plugins may auto-load: godot ...`, which matches the current local-good auto-discovery/trust model rather than a restrictive allowlist mismatch.
+
+What changed on Cookie: added `~/.openclaw/extensions/godot/index.ts`, `~/.openclaw/extensions/godot/package.json`, and `~/.openclaw/extensions/godot/openclaw.plugin.json`, then restarted the running OpenClaw gateway so it could load the extension and register `/godot/*`. No engine change, no project-file change, and no destructive reset was required. Derrick does not need a machine reset; the only practical manual step is to reopen the Godot editor/project if it was already open during the broken state, so the addon can retry registration against the now-live endpoint from a fresh editor session.
+
+---
+
+### Task 16: Audit readiness after OpenClaw registration-spam repair
+
+**Bead ID:** `oca-0qj`  
+**SubAgent:** `primary`  
+**Role:** `auditor`  
+**References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`  
+**Prompt:** Claim the assigned bead on start. Audit the OpenClaw registration-spam diagnosis/repair and confirm whether Cookie’s editor-open baseline is clean enough to continue the retest ladder. Record any remaining caveats and whether Derrick needs to manually reset Cookie at a good stopping point.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+
+**Status:** ⏳ Pending
+
+**Results:** Pending.
+
+---
+
+### Task 17: Diagnose why assembly scenes run/close cleanly on Cookie but do not display the USB camera
+
+**Bead ID:** `oc-039`  
+**SubAgent:** `primary`  
+**Role:** `research`  
+**References:** `REF-01`, `REF-02`  
+**Prompt:** Claim the assigned bead on start. Investigate why the four assembly-community scenes now run in the editor and close cleanly on Cookie, but do not display the intended USB camera feed. Compare the assembly consumer path and the owner MediaPipe repo against the known-good local setup and prior proof expectations. Identify whether the failure is camera enumeration, sidecar startup, MJPEG stream/view hookup, preview-mode logic, or another setup/runtime mismatch.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+- runtime/log folders only if needed for evidence
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+
+**Status:** ✅ Complete
+
+**Results:** Root-cause diagnosis: this is **not** a Cookie camera-enumeration failure, missing model/runtime, or broken MJPEG sidecar on Cookie. The camera/stream path works on Cookie when the proof/testbed path is used; the current assembly editor runs that “close cleanly but show no USB camera” are entering the **assembly gameplay consumer path**, which does not instantiate the proof-scene camera preview wiring at all.
+
+Concrete evidence:
+- Cookie device/runtime checks passed: `/dev/video0..3` exist for the Logitech BRIO, the prepared runtime imports `cv2`, `mediapipe`, and `numpy`, and direct OpenCV capture on Cookie succeeds on index `0` (`640x480`) plus other BRIO nodes.
+- Direct Cookie sidecar validation from the owner repo succeeded: launching `python_mediapipe/main.py --camera 0 --port 4242 --stream-camera --stream-port 4243 --no-filter` produced `[MJPEG] Streamer started on http://0.0.0.0:4243/camera`, `MediaPipe started - Camera: 0`, a live listener on `:4243`, and `curl http://127.0.0.1:4243/snapshot` returned a real `640x480` JPEG. That rules out camera-selection, runtime-asset, and MJPEG-server bring-up as the active blocker.
+- Known-good owner proof evidence on Cookie already exists in `~/.local/share/godot/app_userdata/AeroBeat MediaPipe Testbed/logs/godot.log`: the proof scene logs `[CameraView] Stream started successfully`, `[CameraView] Stream thread started`, and later `[CameraView] Stats: 93841108 bytes, 555 frames`, proving the owner repo’s proof-camera display path can render camera frames on Cookie.
+- By contrast, the four recent assembly editor runs on Cookie (`~/.local/share/godot/app_userdata/AeroBeat/logs/godot2026-05-06T13.10.43.log`, `...13.10.54.log`, `...13.11.13.log`, `...13.11.30.log`) show only the gameplay path: `AeroBeat started`, duplicated `[MediaPipeServer] Starting UDP server on port 4242`, `Tracking started`, `Registered MediaPipe addon adapter`, `Latency display added`, then clean exit. They contain **no** `AutoStartManager`, `CameraView`, `MJPEG`, or proof-scene messages.
+- Code comparison matches the runtime evidence exactly: assembly `src/main.gd` launches the proof scene only when export features `mediapipe_proof` / `mediapipe_proof_control` are present. In ordinary editor runs it stays in gameplay `main.tscn`, where the adapter `addons/aerobeat-input-mediapipe/src/input_provider.gd` builds `providers/mediapipe_provider.gd`; that provider starts only `src/server/mediapipe_server.gd` (UDP listener) and never creates `AutoStartManager` or `camera_view.gd`. The proof/testbed path (`src/mediapipe_test_scene.gd` and owner `.testbed/scenes/test_scene.gd`) is the path that actually wires `AutoStartManager` + `CameraView` to `http://127.0.0.1:4243/camera`.
+
+Truthful ownership call:
+- **Primary bug belongs in the assembly consumer path / run-path expectation**, not in Cookie hardware and not in the owner repo’s sidecar camera stack. The owner proof stack already demonstrates working camera preview on Cookie. The assembly editor runs being used here are not exercising that preview path.
+- There is one smaller owner-side design caveat: the current assembly-facing adapter reports success once the UDP listener starts, so `Tracking started` can appear even when no sidecar/camera preview path was launched. That can mislead debugging, but it is secondary to the main mismatch.
+
+Narrowest recommended repair path next:
+1. For editor proof/validation on Cookie, run the assembly **proof scene path** explicitly (`res://scenes/mediapipe_test_scene.tscn`) or add an editor-only switch in assembly to route into that same proof scene, instead of relying on the default gameplay `main.tscn` path.
+2. If Derrick wants the normal assembly gameplay scene itself to show camera preview, wire the assembly consumer to the owner repo’s existing preview/autostart components (`AutoStartManager` + `camera_view.gd`, or `MediaPipeInputWithCamera`) rather than inventing a new camera stack.
+3. Optional follow-up bug once preview path is restored: tighten the owner adapter/start contract so `Tracking started` is not emitted merely because the UDP socket bound before any actual sidecar/camera data arrives.
+
+---
+
+### Task 18: Repair the camera-display issue at the owning source and refresh Cookie consumer state
+
+**Bead ID:** `oc-5gg`  
+**SubAgent:** `primary`  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-02`  
+**Prompt:** Claim the assigned bead on start. Once the camera-display failure mode is identified, implement the smallest truthful fix in the owning source repo, not in generated consumer mirrors. Then refresh the assembly consumer on Cookie and verify whether the USB camera feed appears in the intended assembly scenes.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+- Cookie consumer runtime state under `addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/`
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+- Prepared runtime files created under `addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/` on Cookie
+- Cookie evidence logs under `.qa-logs/` and `~/.local/share/godot/app_userdata/AeroBeat/logs/`
+
+**Status:** ✅ Complete
+
+**Results:** The explicit assembly proof-scene path on Cookie is **good once the assembly consumer’s mounted MediaPipe runtime is prepared**. The proof scene itself was not wrong, and no owning-source code change was required. The failure mode was narrower: when I first opened `res://scenes/mediapipe_test_scene.tscn` in the Cookie assembly editor and ran it, the scene logged `Missing sidecar runtime root: /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64`, so `AutoStartManager` never reached the camera-preview stack. That showed the proof-scene editor path was blocked by **consumer runtime prep state**, not by camera enumeration, not by the sidecar code, and not by the proof scene’s scene/script wiring.
+
+Smallest truthful fix applied: on Cookie only, I prepared the mounted addon runtime in the assembly consumer with:
+- `cd /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe`
+- `python3 python_mediapipe/prepare_runtime.py --platform linux-x64 --mode dev --install-requirements --validate`
+
+After that prep, I reran the **actual editor-driven proof-scene path** on Cookie’s active X11 session by opening the assembly project in Godot, loading `mediapipe_test_scene.tscn`, and triggering **Run Current Scene (F6)**. Verification from `~/.local/share/godot/app_userdata/AeroBeat/logs/godot.log` is explicit and complete:
+- `[AutoStartManager] Runtime Python found .../addons/aerobeat-input-mediapipe/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python`
+- `[AutoStartManager] Server is running after wait!`
+- `[CameraView] Starting stream from: http://127.0.0.1:4243/camera`
+- `[CameraView] Stream started successfully`
+- `[CameraView] Stream thread started`
+- `[CameraView] Stats: ... 574 frames`
+- then normal proof-scene close cleanup via `[TestScene] Window close request...`, `Stopping camera stream`, and `Cleanup complete`
+
+That is the highest-fidelity proof available here that the explicit assembly proof-scene editor path **does** yield the intended camera preview stack on Cookie once its mounted runtime is prepared.
+
+Exact next step Derrick should try on Cookie:
+1. If the runtime has not already been prepared in the mounted assembly addon on Cookie, run once:
+   - `cd /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/addons/aerobeat-input-mediapipe`
+   - `python3 python_mediapipe/prepare_runtime.py --platform linux-x64 --mode dev --install-requirements --validate`
+2. Open the assembly project explicitly:
+   - `/home/derrick/.local/bin/godot --editor --path /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community`
+3. In the FileSystem dock, open `res://scenes/mediapipe_test_scene.tscn`.
+4. Run **Current Scene** with **F6** (or the editor’s Run Current Scene button).
+5. Wait for the proof scene to finish sidecar startup; the intended success path is the live camera preview in the scene’s camera area plus the `CameraView`/`AutoStartManager` success lines in the log.
+6. For this proofing path, stop there; do not treat the default gameplay `main.tscn` camera absence as a proof-scene failure.
+
+Net result: Derrick’s next editor proofing step on Cookie should be the explicit proof-scene path above, and it is sufficient to restore the intended camera-preview behavior after the one-time mounted-runtime prep.
+
+---
+
+### Task 19: Audit camera-display readiness before resuming the close-behavior retest ladder
+
+**Bead ID:** `oc-pwn`  
+**SubAgent:** `primary`  
+**Role:** `auditor`  
+**References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`  
+**Prompt:** Claim the assigned bead on start. Audit the USB-camera display diagnosis/repair work and confirm whether Cookie has returned to a clean-enough baseline to resume the proving-scene/editor retest ladder with both camera display and close behavior covered.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+
+**Status:** ⏳ Pending
+
+**Results:** Pending.
+
+---
+
+### Task 20: Audit Cookie mediapipe-python repo/editor/runtime readiness for boxing-scene retest
+
+**Bead ID:** `oc-0hv`  
+**SubAgent:** `primary`  
+**Role:** `research`  
+**References:** `REF-01`, `REF-02`  
+**Prompt:** Claim the assigned bead on start. Audit `aerobeat-input-mediapipe-python` on Cookie for the next boxing-scene retest: repo parity, Godot editor path, `.testbed` addon mounts, prepared runtime, model assets, and any setup drift that could recreate yesterday’s failure shape. Record exactly what is ready versus what still needs repair.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+- Cookie repo/runtime state only if needed for evidence
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+
+**Status:** ✅ Complete
+
+**Results:** Audit completed against the actual Cookie repo at `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-input-mediapipe-python` plus the Cookie testbed under `.testbed/`. Cookie is **substantively ready** for the next boxing-scene retest, with one repo-hygiene drift still present but no blocking runtime/setup gap found.
+
+**What is ready on Cookie (concrete evidence):**
+- **Repo parity for the code path that matters:** Cookie and local both report `HEAD` `80ed9ce8f6e845d619595512da3f2300f3551061` on `main`, and Cookie’s working tree is clean (`git status --short --branch` showed `## main...origin/main` with no modified tracked files).
+- **Godot editor path/version alignment:** on Cookie, `command -v godot` is `/home/derrick/.local/bin/godot`, whose wrapper is `exec "/home/derrick/.local/share/openclaw/godot/current/godot" "$@"`; the current binary reports `4.6.2.stable.official.71f334935`. That matches the intended OpenClaw-managed editor path used for today’s retest ladder.
+- **`.testbed` addon mounts are present and the normal install step is currently clean:** Cookie’s `.testbed/addons.jsonc` still resolves the repo itself via symlink at `..`, `aerobeat-input-core` via symlink at `../../aerobeat-input-core`, and GUT from `git@github.com:bitwes/Gut.git`. Actual installed mount shape on Cookie matches that intent: `.testbed/addons/aerobeat-input-mediapipe-python -> /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-input-mediapipe-python`, `.testbed/addons/aerobeat-input-core -> /home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-input-core`, and `.testbed/.addons/gut/.git/HEAD` exists. Re-running the documented prep step on Cookie succeeded cleanly: `cd .testbed && godotenv addons install` → `✅ Addons installed successfully.`
+- **Prepared runtime is present and marked ready:** Cookie has `python_mediapipe/assets/runtimes/linux-x64/runtime-manifest.json`, `.runtime-ready`, and `venv/bin/python`. The manifest records `platform_key: linux-x64`, `mode: dev`, `python_executable: venv/bin/python`, `python_version: 3.14.2`, and `validation_status: ready`.
+- **Model assets are present:** Cookie has all three expected tasks under `python_mediapipe/assets/models/`: `pose_landmarker_full.task` (`9398198` bytes), `pose_landmarker_heavy.task` (`30664242` bytes), and `pose_landmarker_lite.task` (`5777746` bytes).
+- **Quick truthful open/run-readiness probe passed:** a Cookie headless probe inside `.testbed` got past mere parsing and exercised the actual proving-scene startup path. Logs showed `[AutoStartManager] Runtime Python found .../.testbed/addons/aerobeat-input-mediapipe-python/python_mediapipe/assets/runtimes/linux-x64/venv/bin/python`, `[AutoStartManager] Server is running after wait!`, `[CameraView] Stream started successfully`, and `[MediaPipeServer] UDP socket bound to 127.0.0.1:4242`. That is strong evidence the boxing proving scene’s core open/start dependencies are currently intact on Cookie.
+- **Boxing-scene contract surfaces look aligned:** `boxing_proving.tscn` still points at `res://addons/aerobeat-input-mediapipe-python/src/autostart_manager.gd`, `proving_harness.gd` still expects the current boxing event family (`guard_start`, `knee_left`, `leg_lift_left_start`, etc.), and the mounted `aerobeat-input-core`/provider surfaces visible on Cookie match those names.
+
+**What is not fully ready / remaining drift:**
+- **Repo-hygiene drift only:** Cookie’s `origin` remote is still HTTPS (`https://github.com/AeroBeat-Workouts/aerobeat-input-mediapipe-python.git`) while local uses SSH. That does **not** block the boxing-scene retest, but it is real drift and should be normalized later.
+- **Possible environment drift worth remembering, not a blocker from this audit:** Cookie’s prepared runtime manifest is on Python `3.14.2`. I did not find a new blocking mismatch from that during this pass—the runtime is present, marked ready, and its startup path succeeded—but it remains a notable host-specific delta to keep in mind if a later failure appears only on Cookie.
+
+**Bottom-line readiness call:** for the next boxing-scene retest on Cookie, the current evidence says the repo, editor path, addon mounts, runtime prep, model assets, and proving-scene startup path are **ready**. The narrowest next step is to have Derrick reopen `.testbed/scenes/boxing_proving.tscn` in the Cookie editor and verify the full human run/close behavior on the actual terminal/GUI path. If that retest still fails, the remaining suspect surface is no longer setup drift; it is the live editor-session run/close behavior itself.
+
+---
+
+### Task 21: Repair any mediapipe-python setup drift on Cookie and verify boxing scene run/close
+
+**Bead ID:** `oc-owo`  
+**SubAgent:** `primary`  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-02`  
+**Prompt:** Claim the assigned bead on start. If the Cookie mediapipe-python audit finds setup drift, apply the smallest truthful fix in the owning repo or Cookie testbed/runtime setup as appropriate. Then verify the boxing proving scene can open, run, and close on Cookie without destabilizing the terminal/GUI.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+- owner repo or Cookie testbed/runtime state only as required by the fix
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+- source/config files only if required by the fix
+
+**Status:** ⏳ Pending
+
+**Results:** Pending.
+
+---
+
+### Task 22: Audit mediapipe-python boxing-scene readiness after Cookie verification
+
+**Bead ID:** `oc-ykb`  
+**SubAgent:** `primary`  
+**Role:** `auditor`  
+**References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`  
+**Prompt:** Claim the assigned bead on start. Audit the Cookie mediapipe-python readiness/fix/verification work and decide whether the boxing proving scene on Cookie is now a clean enough baseline for continued close-behavior testing. Record any remaining caveats and the exact next retest ladder.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+
+**Status:** ⏳ Pending
+
+**Results:** Pending.
+
+---
+
+### Task 23: Audit the non-crashing BadWindow close error and decide whether it is still worth tracking
+
+**Bead ID:** `oc-che`  
+**SubAgent:** `primary`  
+**Role:** `research`  
+**References:** `REF-01`, `REF-02`  
+**Prompt:** Claim the assigned bead on start. Audit the remaining non-crashing `BadWindow` close error Derrick saw during Cookie retesting. Determine whether it matches the previously known X11 noise family, whether it still indicates a meaningful unresolved close-path issue, and how it should be recorded for future follow-up without blocking the current test path.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+
+**Status:** ✅ Complete
+
+**Results:** Audited against `REF-01` plus the prior close-path evidence chain in `REF-02`, especially the 2026-04-30 focused matrix and follow-up audit notes that narrowed the earlier `BadWindow` family. Truthful conclusion: Derrick’s latest Cookie note is **not blocking** on its own because the observed error was explicitly **non-crashing** and did **not** recreate the previously meaningful failure signature (`no WM_CLOSE_REQUEST` + heavy `BadWindow` spam + hang/forced-kill or next-launch fallout). The strongest supported comparison is that this looks like the same broader **X11/Xwayland close-path noise family** only in the shallow symptom sense (`BadWindow` appearing during close), but **not** in the stronger route-specific failure sense previously tied to dirty close paths like `xdotool windowclose` on the audited minimal repro.
+
+Recommendation for Derrick during the current Cookie testing pass: treat this as a **record-only caveat**, not a stop-path blocker. Keep moving on the proving-scene/editor retest ladder unless the symptom upgrades into the older meaningful family again—e.g. repeated `BadWindow` spam, missing clean close, stuck process, forced cleanup, editor death, or host destabilization. For future follow-up, record it as: “residual non-crashing X11/BadWindow close noise seen on Cookie; currently non-blocking and weaker than the previously audited close-path bug family.”
+
+---
+
+### Task 24: Restore clear tracking-status observability in boxing_proving and flow_proving on Cookie
+
+**Bead ID:** `oc-9a5`  
+**SubAgent:** `primary`  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-02`  
+**Prompt:** Claim the assigned bead on start. Investigate why `boxing_proving` and `flow_proving` on Cookie did not visibly show GUI or console status for boxing/flow tracking during the latest retest. Restore truthful scene-level observability so Derrick can see the tracking state and event status while testing, using the owning source repo rather than generated mirrors. After landing source changes, sync Cookie over SSH so Derrick can verify the UI remotely through Remmina without needing physical camera truthing in this session.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+- `.testbed/scenes/`
+- source files or supporting scene scripts as required
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+- proving-scene and supporting script files as required
+
+**Status:** ✅ Complete
+
+**Results:** Root cause was not that observability had never been built; it was that the proving workbench on Cookie was stuck behind a half-landed source refactor. The owning repo’s proving scenes had already been updated to load support scripts from `res://scripts/...`, and `proving_harness.gd` already carried the restored `LiveStatusLabel` + live snapshot/event reporting surface, but the actual `.testbed/scripts/` move had never been committed/pushed. That left Cookie on stale layout and stale UI wiring. The source-of-truth fix landed in `aerobeat-input-mediapipe-python` commit `e99d382` (`Restore proving scene script layout and observability`), local validation passed (scene-load checks plus 23/23 GUT tests), and Cookie was later synced to that exact commit with `.testbed` addons refreshed. The remaining next-step truth is human UI verification on Cookie, not more source repair.
+
+---
+
+### Task 25: Move `.testbed/scenes/*.gd` support scripts into `.testbed/scripts/` and repair scene links
+
+**Bead ID:** `oc-8pe`  
+**SubAgent:** `primary`  
+**Role:** `coder`  
+**References:** `REF-02`  
+**Prompt:** Claim the assigned bead on start. Move the appropriate `.gd` support scripts out of `.testbed/scenes/` into a new root `.testbed/scripts/` folder, preserving only scene files in `.testbed/scenes/`. Update every scene/resource/test reference so nothing breaks, and keep the structure truthful and maintainable. After the source cleanup lands, sync Cookie over SSH so Derrick’s Remmina-based verification sees the same layout and scene wiring.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+- `.testbed/scenes/`
+- `.testbed/scripts/`
+- any dependent test/scene folders that reference moved scripts
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+- moved `.gd` / `.gd.uid` files
+- any `.tscn` / `.gd` files with updated paths
+
+**Status:** ✅ Complete
+
+**Results:** This work was completed as part of the same truthful source fix that restored proving-scene observability. Commit `e99d382` moved the support workbench scripts into `.testbed/scripts/`, repaired the scene links (`boxing_proving.tscn`, `flow_proving.tscn`, `test_scene.tscn`), updated `test_scene.gd` to load from `res://scripts/mediapipe_provider_test.gd`, and refreshed README guidance. Cookie was then synced to `e99d382`, `.testbed` addons were reinstalled there, and remote verification confirmed that both the repo and addon mirror expose the `.testbed/scripts` layout plus the repaired `res://scripts/...` scene references.
+
+---
+
+### Task 26: Audit the proving-scene observability + script-layout cleanup before more Cookie retests
+
+**Bead ID:** `oc-1ht`  
+**SubAgent:** `primary`  
+**Role:** `auditor`  
+**References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`  
+**Prompt:** Claim the assigned bead on start. Audit the BadWindow note, proving-scene observability repair, and `.testbed/scripts/` cleanup. Confirm whether Cookie is left with a cleaner and more testable mediapipe-python setup for the next retest pass.
+
+**Folders Created/Deleted/Modified:**
+- `.plans/`
+
+**Files Created/Deleted/Modified:**
+- `.plans/2026-05-06-cookie-exported-app-close-control-check.md`
+
+**Status:** ⏳ Pending
+
+**Results:** Pending by design at tonight’s handoff. Source-level work is now in the right state: `oc-9a5` and `oc-8pe` are complete, Cookie has been synced to `e99d382`, `.testbed` addons were refreshed there, and the previously lingering `BadWindow` note remains record-only/non-blocking. What is still missing is the final human truth pass Derrick wants to do in person on Cookie next session: open `boxing_proving` and `flow_proving`, confirm the expected boxing/flow input events visibly update in the UI, confirm the observability/status surfaces are legible, and confirm run/close behavior still stays clean. `oc-1ht` should resume from that in-person verification step rather than reopening source cleanup.
+
+---
+
 ## Final Results
 
 **Status:** ⚠️ Partial
 
-**What We Built:** Drafted and extended the execution plan for Cookie-side close-path isolation, then used it to eliminate the plain exported control path and the exported MediaPipe proof path before moving back toward editor-based retest work.
+**What We Built:** Drove the Cookie close-path investigation out of broad crash triage and into repo-owned cleanup plus host-baseline repair. On the AeroBeat side, the active proving-scene source of truth is now restored and synced: `aerobeat-input-mediapipe-python` landed `e99d382` (`Restore proving scene script layout and observability`), which both restored the intended boxing/flow observability surface and truthfully completed the `.testbed/scripts/` cleanup. Cookie was then updated to that commit and its `.testbed` addons were refreshed so the next verification pass uses the right UI surface. On the host side, Pico’s Remmina path was also repaired back to a live GNOME session + GRD listener + valid RDP credentials so remote access is no longer the obvious blocker.
 
-**Reference Check:** `REF-01` through `REF-04` define the current evidence chain and the intended smaller bug surface for today’s test.
+**Reference Check:** `REF-01` through `REF-04` still define the evidence chain and the intended retest surface. No new source reference displaced them; instead, tonight’s work brought Cookie and Pico back into alignment with the already-established truth boundary.
 
 **Commits:**
-- None yet.
+- `e99d382` - Restore proving scene script layout and observability
 
-**Lessons Learned:** When the question is "is this plain exported-close behavior or an AeroBeat-specific teardown issue," the smallest exported control artifact should be the first branch point. With both exported paths now reported clean on Cookie today, the next useful branch is environment parity and editor-path alignment before retrying the crash shape from yesterday.
+**Lessons Learned:** The proving-scene observability issue was not a fresh feature gap; it was a half-landed refactor leaving Cookie behind the real source layout. Also, remote verification infrastructure matters: a dead user GNOME session and missing GRD credentials can masquerade as a broader Remmina/network problem when the real fix is session + keyring recovery.
 
 ---
 
