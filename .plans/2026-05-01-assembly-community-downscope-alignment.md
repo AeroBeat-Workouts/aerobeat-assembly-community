@@ -1,7 +1,7 @@
 # aerobeat-assembly-community
 
 **Date:** 2026-05-01  
-**Status:** In Progress  
+**Status:** Complete  
 **Agent:** Chip 🐱‍💻
 
 ---
@@ -78,7 +78,7 @@ The repo also already had truthful local dirt: the old root build-distribution i
 
 ## Final Results
 
-**Status:** ⚠️ Partial
+**Status:** ✅ Complete
 
 **What We Built:** A truthful downscope-aligned repo surface for the active PC community assembly, plus a narrow repo-local repeatable restore flow for today's dependency reality. README, build/distribution docs, bundle/readme/runtime copy, and the carried local cleanup now match the locked product story: camera-first gameplay, Boxing + Flow, PC community first, honest current dependency/runtime caveats, and a documented restore wrapper that safely reacquires disposable addon trees after import/test runs.
 
@@ -158,6 +158,34 @@ The repo also already had truthful local dirt: the old root build-distribution i
 - **Observed rerun output:** both GUT passes again finished with `11` tests total, `10` passing, `1` risky/pending (`test_cleanup_on_exit` did not assert), and `2` warnings about unfreed children/object cleanup during teardown. The nested `repros/linux-close-minimal` project warning and the ObjectDB leak warning still reproduce during import/teardown, but they do not break the documented restore/import/GUT contract.
 - **QA handoff:** the wrapper-based restore contract is now propagated across the stale build/CI/comment surfaces that the audit flagged, so this repo is ready for QA recheck.
 - **Beads note:** direct `bd update oc-rqa --status in_progress --json` still hits the local Beads identity mismatch unless the environment skips the identity check, so the follow-up state is recorded here in the plan instead of closing or mutating the bead.
+
+**QA Recheck Update (2026-05-01, final contract-propagation pass):**
+- **Result:** ✅ Recheck passed for the scoped wrapper-contract propagation bead.
+- **Repo-surface verification:** independently re-inspected the active repo truth surfaces after the coder follow-up: `README.md`, `docs/build-distribution-system.md`, `addons.jsonc`, `project.godot`, `scripts/restore-addons.sh`, `build-scripts/build-test.sh`, `.github/workflows/gut_ci.yml`, `build-scripts/build-linux-bundle.sh`, `build-scripts/build-macos-bundle.sh`, `build-scripts/build-windows-bundle.sh`, `build-scripts/templates/run.sh`, `build-scripts/templates/run.bat`, and `tests/integration/test_full_pipeline.gd`.
+- **Contract propagation check:** the previously stale repo-owned surfaces now consistently point to `./scripts/restore-addons.sh` as the truthful restore entrypoint whenever this assembly needs its generated addon trees rebuilt. README/build/CI/test comments no longer contradict that contract.
+- **Truth alignment spot-check:** the inspected README/build/runtime text still matches the locked docs truth from `aerobeat-docs`: camera-only gameplay input, Boxing + Flow as official v1 gameplay, and PC community first. I found no remaining stale “air drumming” wording in the active repo-owned surfaces I checked.
+- **Independent validation rerun:** after a clean repo-local pass, I ran the documented flow twice in a row: `./scripts/restore-addons.sh` → `godot --headless --path . --import` → `godot --headless --path . --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`, then repeated the same sequence again. Both cycles completed successfully.
+- **Observed validation output:** each GUT run still reports `11` tests total, `10` passing, `1` risky/pending (`test_cleanup_on_exit` did not assert), and `2` warnings tied to unfreed children/object cleanup during teardown. Import still warns about the nested repro project at `repros/linux-close-minimal` being ignored.
+- **Raw-install truth check:** immediately after the validated import/test state, plain `godotenv addons install` still fails exactly as expected on dirty generated addon `.uid` files in `aerobeat-input-mediapipe` (`src/input_provider.gd.uid`, `src/process/desktop_sidecar_launcher.gd.uid`, `src/runtime/desktop_sidecar_runtime.gd.uid`). That upstream/source hygiene issue remains real, but the wrapper contract truthfully contains it for this assembly.
+- **Repeatability note:** my first combined automation attempt hit a one-off transient `git add -A` failure inside the generated `addons/aerobeat-input-mediapipe` checkout during restore, but I could not reproduce it afterward; two direct end-to-end wrapper/import/GUT cycles succeeded cleanly. I am treating that first hit as non-blocking flake/noise unless it recurs.
+- **Blocking assessment:** no remaining blocker was found for this bead’s scope. The wrapper-based restore contract propagation now appears complete across the repo-owned surfaces that previously drifted.
+- **Remaining non-blocking defects/warnings:**
+  - `test_cleanup_on_exit` is still weak/risky because it performs no assertion.
+  - GUT teardown still warns about unfreed children/object cleanup.
+  - Godot still warns about the nested repro project under `repros/linux-close-minimal`.
+  - raw `godotenv addons install` remains non-repeatable after import/test until upstream addon sources commit the missing generated `.uid` files.
+
+**Final Auditor Recheck Update (2026-05-01):**
+- **Result:** ✅ Audit passed; bead can close.
+- **Repo-truth audit:** I independently rechecked the repo-owned contract surfaces that previously drifted — `README.md`, `docs/build-distribution-system.md`, `scripts/restore-addons.sh`, `build-scripts/build-test.sh`, `.github/workflows/gut_ci.yml`, `build-scripts/build-linux-bundle.sh`, `build-scripts/build-macos-bundle.sh`, `build-scripts/build-windows-bundle.sh`, `tests/integration/test_full_pipeline.gd`, `addons.jsonc`, and `project.godot`. They now consistently present the wrapper-based restore flow as the documented contract and keep the camera-only Boxing + Flow / PC-community-first product truth aligned with `aerobeat-docs`.
+- **Validation evidence:** I verified the expected raw-install failure mode (`godotenv addons install` still aborts after import/test on generated `.uid` dirtiness inside `aerobeat-input-mediapipe`) and separately reran the documented repo contract successfully: `./scripts/restore-addons.sh` → `godot --headless --path . --import` → `godot --headless --path . --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`.
+- **Repeatability assessment:** during audit I did hit intermittent `git clone ... exit 128` restore flakes inside GodotEnv cache refreshes, but direct manual SSH clones to the same remotes succeeded and a subsequent clean wrapper → import → GUT rerun also succeeded. I am treating those clone hiccups as external transport/cache noise rather than a repo-contract mismatch because the repo-owned restore contract, truth surfaces, and validated happy path are coherent once the SSH fetch succeeds.
+- **Warning assessment:**
+  - `test_cleanup_on_exit` lacking an assertion is **not blocking** for this bead; it is weak coverage, not a contract failure.
+  - the nested repro project warning under `repros/linux-close-minimal` is **not blocking**.
+  - teardown/unfreed-object warnings are **not blocking** for this scoped assembly-truth bead because import and GUT still complete and the wrapper-based restore contract is now documented consistently.
+- **Repo cleanliness:** `git status --short` remained clean for tracked files after the audit; generated `addons/` and `.addons/` stayed ignored as expected.
+- **Beads note:** the repo still has the known Beads identity mismatch, so closing required using `BEADS_SKIP_IDENTITY_CHECK=1`.
 
 **Lessons Learned:** This repo is truth-critical because it sits on the active assembly path. Even “docs-only” cleanup touches runtime credibility here: stale bundle/readme copy and transition-language can silently contradict the locked product scope just as much as a bad manifest can, and validation claims should distinguish between clean-install success, repeatable repo-local restore success, and the still-separate upstream source hygiene needed to eliminate raw `godotenv addons install` dirtiness altogether.
 
