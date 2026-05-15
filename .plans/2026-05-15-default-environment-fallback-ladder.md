@@ -119,9 +119,9 @@ This singleton is specifically for **default environment tier recommendation**. 
 
 **Two-phase model**
 
-#### Phase A — startup capability estimate
+#### Phase A — static device/context snapshot
 
-Cheap signals gathered before loading the heavy background:
+Cheap contextual signals gathered for explanation and future policy tuning:
 
 - OS/platform class: desktop/mobile/web/XR
 - renderer/backend when available
@@ -129,15 +129,11 @@ Cheap signals gathered before loading the heavy background:
 - display resolution bucket
 - optional refresh-rate bucket if cheaply available
 
-Initial tier heuristics:
-
-- `high`: desktop-class device + non-weak renderer + resolution not obviously hostile
-- `medium`: desktop but uncertain/older hardware, or high resolution with uncertain GPU
-- `low`: obviously constrained platform or weak/unknown renderer paired with risky resolution
+In MVP, these signals should **inform** the recommendation but not hard-gate the initial shell/background asset before measurement. They are best treated as supporting evidence rather than the sole decision-maker.
 
 #### Phase B — live performance confirmation
 
-Runtime signals gathered after startup while logo/intermediate scene masks the swap:
+Runtime signals gathered **after** the environment is loaded at startup or after a workout environment loads:
 
 - rolling FPS average
 - rolling frame-time average
@@ -151,12 +147,10 @@ Runtime signals gathered after startup while logo/intermediate scene masks the s
 class_name DefaultEnvironmentPerformanceClassifier
 extends Node
 
-signal startup_sample_completed(snapshot: Dictionary)
 signal recommendation_updated(result: Dictionary)
 signal downgrade_recommended(event: Dictionary)
-signal recovery_recommended(event: Dictionary)
 
-func sample_startup_capabilities() -> Dictionary
+func sample_static_signals() -> Dictionary
 func begin_live_sampling(context: Dictionary = {}) -> void
 func stop_live_sampling() -> void
 func get_current_recommendation() -> Dictionary
@@ -164,6 +158,8 @@ func get_current_signals() -> Dictionary
 func get_current_reasons() -> PackedStringArray
 func should_downgrade_for_active_environment() -> bool
 ```
+
+For the shared first pass, other repos should only depend on `recommendation_updated(result)` and `downgrade_recommended(event)`. Extra local signals can exist later, but they are not part of the frozen cross-repo contract.
 
 **Recommendation shape**
 
@@ -194,7 +190,6 @@ func should_downgrade_for_active_environment() -> bool
 
 - `recommendation_updated(result)` — emitted when current recommended tier changes
 - `downgrade_recommended(event)` — emitted when sustained low-performance policy trips
-- `recovery_recommended(event)` — optional future-friendly upward recommendation; do not auto-upgrade in MVP
 
 `downgrade_recommended` payload:
 
@@ -224,8 +219,8 @@ Diagnostic scene should show:
 
 Validation should prove:
 
-- startup estimate is generated before rich environment load
-- warm-up confirmation can revise the estimate
+- startup environment loads first, then measurement/recommendation runs against the active environment
+- emitted recommendations reflect measured behavior rather than only a pre-load guess
 - sustained `<30 FPS average for 3 seconds` produces a downgrade recommendation event
 - no oscillating repeated downgrade spam once already at `low`
 
@@ -258,19 +253,21 @@ This repo should transform input-core-compatible tracking/gesture data into **ca
 class_name CameraGestureControlManager
 extends Node
 
-signal control_mode_changed(mode: StringName)
-signal profile_changed(profile: Dictionary)
-signal gesture_control_updated(state: Dictionary)
-signal gesture_control_lost(reason: String)
+signal control_mode_changed(mode: String)
+signal tracking_state_changed(state: Dictionary)
+signal profile_loaded(profile: Dictionary)
+signal profile_saved(path: String)
 
+func set_enabled(enabled: bool) -> void
+func set_control_mode(mode: String) -> void
+func attach_camera(camera: Camera3D) -> void
+func detach_camera() -> void
 func attach_input_source(input_source: Node) -> bool
 func detach_input_source() -> void
-func set_control_mode(mode: StringName) -> void # "camera_gesture" | "mouse_wasd"
-func set_target_camera(camera: Camera3D) -> void
 func apply_profile(profile: Dictionary) -> void
 func get_profile() -> Dictionary
-func save_profile_json(path: String) -> Dictionary
-func load_profile_json(path: String) -> Dictionary
+func load_profile(path: String) -> Dictionary
+func save_profile(path: String) -> Dictionary
 func get_debug_state() -> Dictionary
 ```
 
@@ -279,7 +276,7 @@ func get_debug_state() -> Dictionary
 ```json
 {
   "version": 1,
-  "mode": "camera_gesture",
+  "mode": "gesture",
   "head_tracking_enabled": true,
   "hand_tracking_enabled": false,
   "invert_x": false,
@@ -314,11 +311,11 @@ Do **not** make boxing/flow gesture events the primary parallax driver. Use pose
 
 **Recommended events**
 
-`gesture_control_updated(state)` payload:
+`tracking_state_changed(state)` payload:
 
 ```json
 {
-  "mode": "camera_gesture",
+  "mode": "gesture",
   "tracking": true,
   "confidence": 0.88,
   "normalized_input": {"x": 0.12, "y": -0.04, "z": 0.08},
@@ -331,7 +328,7 @@ Do **not** make boxing/flow gesture events the primary parallax driver. Use pose
 
 The `.testbed/` scene should visibly compare:
 
-- `camera_gesture` mode
+- `gesture` mode
 - `mouse_wasd` mode
 
 and provide a left-side control panel with:
@@ -389,17 +386,16 @@ class_name EnvironmentManager
 extends Node
 
 signal environment_load_started(request: Dictionary)
-signal environment_loaded(result: Dictionary)
-signal environment_failed(error: Dictionary)
-signal environment_unloaded(previous: Dictionary)
-signal active_environment_changed(state: Dictionary)
+signal environment_load_progress(progress: Dictionary)
+signal environment_load_succeeded(result: Dictionary)
+signal environment_load_failed(error: Dictionary)
+signal environment_cleared()
 
-func set_host(host: Node) -> void
-func load_environment(request: Dictionary) -> Dictionary
-func unload_environment() -> void
-func reload_environment() -> Dictionary
-func get_active_environment() -> Dictionary
-func supports_request(request: Dictionary) -> bool
+func load_environment(request: Dictionary) -> void
+func load_environment_from_workout_yaml(yaml_path: String, context: Dictionary = {}) -> void
+func clear_environment() -> void
+func get_current_environment() -> Dictionary
+func supports_kind(kind: String) -> bool
 ```
 
 **Request contract**
@@ -411,7 +407,7 @@ func supports_request(request: Dictionary) -> bool
   "kind": "splat",
   "asset_path": "/absolute/or/res/path/demo.compressed.ply",
   "config_path": "/absolute/or/res/path/demo.splat.json",
-  "cover_mode": "cover",
+  "display_mode": "cover",
   "context": "default_shell"
 }
 ```
@@ -519,6 +515,25 @@ UI should include:
 
 ---
 
+
+
+**Additional environment-tool recommendation**
+
+- keep the core manager generic
+- add a convenience path for AeroBeat workout-environment YAML ingestion via content-core
+- expose `environment_load_progress(progress)` so consumers can show normalized percent + status during heavy loads
+- progress payload should prefer a normalized shape like:
+
+```json
+{
+  "status": "resolving | loading | decoding | instantiating | ready",
+  "progress": 0.42,
+  "message": "Loading splat asset..."
+}
+```
+
+For splats, prefer reusing/adapting the progress semantics already exposed by the Gaussian splat integration path instead of inventing a conflicting progress language.
+
 ## Assembly Integration Design (`aerobeat-assembly-community`)
 
 ### Startup ladder
@@ -528,17 +543,13 @@ Assembly should own the orchestration, not the tools.
 Recommended startup flow:
 
 1. boot into new `logo_or_bootstrap` scene instead of directly into the current proof-style main shell
-2. instantiate the settings classifier singleton
-3. run `sample_startup_capabilities()` immediately
-4. choose default tier:
-   - `high` -> splat
-   - `medium` -> video
-   - `low` -> image
-5. instantiate environment manager and request the chosen environment tier
-6. while the logo/intermediate scene is still visible, begin live sampling
-7. when the default environment is loaded and minimally stable, transition into the main shell scene with the chosen environment already active
+2. instantiate the environment manager and load the chosen startup default environment while the bootstrap/logo scene is visible
+3. once the environment is loaded, instantiate or activate the settings classifier singleton
+4. capture static device/context signals and begin live sampling against the active environment
+5. emit a recommendation-detection event when the classifier has enough evidence to recommend `high`, `medium`, or `low`
+6. transition into the main shell scene with the active environment already displayed and the recommendation available to consumers
 
-This keeps startup auto-apply behavior aligned with Derrick’s approved direction and masks environment swap/loading cost behind a branded scene.
+This keeps startup masking aligned with Derrick’s approved direction and makes startup detection recommendation-based rather than a hidden pre-load gate.
 
 ### Recommended assembly-owned configuration
 
@@ -562,12 +573,12 @@ Suggested shape:
     "medium": {
       "kind": "video",
       "asset_path": "res://assets/environments/default/calm_blue_sea_1.ogv",
-      "cover_mode": "cover"
+      "display_mode": "cover"
     },
     "low": {
       "kind": "image",
       "asset_path": "res://assets/environments/default/perfect-hue-may-14-2026.png",
-      "cover_mode": "cover"
+      "display_mode": "cover"
     }
   }
 }
@@ -612,8 +623,8 @@ Keep the current MediaPipe proof/control scenes intact; do not entangle the fall
 
 Validate:
 
-- startup classification appears before heavy environment load
-- live sampling updates recommendation state
+- startup detection runs after the startup environment is loaded
+- live sampling updates recommendation state and emits recommendation events
 - downgrade event fires after sustained low FPS threshold
 - diagnostic scene clearly explains *why* the current tier was chosen
 
@@ -641,8 +652,8 @@ Validate:
 
 Validate:
 
-- startup bootstrap scene hides the ladder choice/load
-- classifier picks a tier and environment manager loads the matching default asset
+- startup bootstrap scene hides startup environment loading and post-load performance detection
+- classifier emits a recommendation event for the active startup environment after measurement
 - direct workout env failure returns to default environment
 - sustained low-performance in workout env emits recommendation event with next rung
 
@@ -660,7 +671,7 @@ Validate:
 
 3. **`aerobeat-assembly-community` bootstrap integration**
    - consumes both tools
-   - implements startup auto-apply and workout failure recovery policy
+   - implements startup environment loading, post-load recommendation detection, and workout failure recovery policy
 
 4. **`aerobeat-tool-camera-gesture-control`**
    - independent but adjacent work
@@ -727,7 +738,7 @@ These items should stay documented but not block MVP:
 
 **Status:** ✅ Complete
 
-**Results:** Planned a two-phase classifier in `REF-03`: startup capability estimate plus live performance confirmation. Locked the recommendation shape, downgrade event payload, sampling rules, and diagnostic testbed requirements. Aligned to Derrick’s approved startup auto-apply and `<30 FPS for 3 seconds` downgrade trigger.
+**Results:** Planned a two-phase classifier in `REF-03`: static device/context snapshot plus live performance confirmation after environment load. Locked the recommendation shape, downgrade event payload, sampling rules, and diagnostic testbed requirements. Aligned to Derrick’s approved post-load recommendation-event flow and `<30 FPS for 3 seconds` downgrade trigger.
 
 ---
 
@@ -756,8 +767,8 @@ These items should stay documented but not block MVP:
 **Bead ID:** `aerobeat-assembly-community-nbl`  
 **SubAgent:** `primary` (for `research` workflow role)  
 **Role:** `research`  
-**References:** `REF-02`, `REF-06`, `REF-08`  
-**Prompt:** Plan the new `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-environment` repo. Define the runtime singleton in `/src/` for loading/swapping images, videos, GLBs, and AeroBeat-supported `.compressed.ply` splats; specify full-screen image/video behavior (cover without letterboxing); define separate sibling JSON config contracts for GLB and splat transforms/config; and design the `.testbed/` scene with one sample image, video, GLB, and splat pulled from `aerobeat-environment-community`.
+**References:** `REF-02`, `REF-06`, `REF-08`, `REF-09`  
+**Prompt:** Plan the new `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-environment` repo. Define the runtime singleton in `/src/` for loading/swapping AeroBeat-supported `.png`, `.ogv`, `.glb`, and `.compressed.ply` environments; specify full-screen image/video behavior (cover without letterboxing); define separate sibling config contracts for GLB and splat environment transforms/config; decide how the repo should remain generic while also conveniently ingesting AeroBeat workout-environment YAML/metadata through the content-core contract path; include progress/status reporting for long loads; and design the `.testbed/` scene with one sample image, video, GLB, and splat pulled from `aerobeat-environment-community`.
 
 **Folders Created/Deleted/Modified:**
 - Planning/docs only expected
@@ -771,13 +782,13 @@ These items should stay documented but not block MVP:
 
 ---
 
-### Task 5: Plan how assembly-community will consume these tools for the default environment ladder and workout recovery events
+### Task 5: Record future assembly-community consumption notes without making it a near-term implementation focus
 
 **Bead ID:** `aerobeat-assembly-community-c4h`  
 **SubAgent:** `primary` (for `coder` workflow role)  
 **Role:** `coder`  
 **References:** `REF-01`, `REF-03`, `REF-08`  
-**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community`, plan the integration path for using the performance classifier and environment singleton to drive the default shell/background environment ladder. Also plan the workout-environment recovery hooks: direct environment load errors should return to the default environment, and sustained low performance (below 30 FPS average for 3 seconds) should emit a recommendation event to swap profile to `medium` or `low`. Keep later UI warning flows and automatic workout fallback asset generation documented as post-v1 work.
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community`, record only the minimum future-consumer notes needed so the Lego-piece repos expose the right events/contracts for later use. Do not optimize around immediate assembly integration. Capture the future workout-environment recovery hooks at a policy level: direct environment load errors should return to the default environment, and sustained low performance (below 30 FPS average for 3 seconds) should emit a recommendation event to swap profile to `medium` or `low`. Keep later UI warning flows and automatic workout fallback asset generation documented as post-v1 work.
 
 **Folders Created/Deleted/Modified:**
 - Planning/docs only expected
@@ -787,7 +798,7 @@ These items should stay documented but not block MVP:
 
 **Status:** ✅ Complete
 
-**Results:** Planned a bootstrap/logo scene that chooses and loads the default environment tier immediately, plus an assembly-owned ladder config and workout recovery event policy. Kept current MediaPipe proof scenes separate from the new startup ladder surface.
+**Results:** Planned a bootstrap/logo scene that loads the startup environment first, then runs detection and emits recommendation events from the measured result, plus an assembly-owned ladder config and workout recovery event policy. Kept current MediaPipe proof scenes separate from the new startup ladder surface.
 
 ---
 
@@ -816,6 +827,8 @@ These items should stay documented but not block MVP:
 I checked the roadmap against the inspected repo truths and Derrick’s approved constraints:
 
 - `.compressed.ply` is treated as the official splat target while preserving wrapper-level compatibility truth from `REF-06`
+- environment-side transform configs are explicitly for environment content placement, not the camera
+- camera control mode naming is frozen as `gesture`, `mouse_wasd`, and `disabled`
 - the performance classifier stays in `aerobeat-tool-settings/src/`
 - startup auto-apply is handled in assembly behind a bootstrap/logo scene
 - workout load failure returns to default environment
@@ -824,7 +837,7 @@ I checked the roadmap against the inspected repo truths and Derrick’s approved
 - environment tool uses separate GLB and splat JSON contracts
 - workout fallback asset generation and richer UI handling remain post-v1
 
-The main remaining ambiguity is policy-level, not architectural: whether shell/background live runtime should ever auto-downgrade immediately in MVP or only emit recommendation events outside workout contexts. My recommendation is **default shell may auto-apply only at startup, while live runtime uses recommendation events rather than surprise swaps**.
+Design fork resolved: for the default shell/background and for workout environments, run performance detection **after** the environment loads and emit recommendation events from the measured result. My recommendation remains that MVP should prefer recommendation events over surprise live swaps.
 
 ---
 
