@@ -145,7 +145,10 @@ Validation after the switchover showed no remaining active references to `aerobe
 **Reference Check:** `REF-01` through `REF-06` were rechecked during the switchover. Active references now point at `aerobeat-environment-core`, `aerobeat-environment-loader`, and `aerobeat-environment-gaussian-splat`. The only old-name references intentionally left behind are in archived historical planning under `aerobeat-environment-community/.plans/archive/2026-05-15-splat-format-policy-alignment.md`.
 
 **Commits:**
-- Pending repo commits/pushes for `aerobeat-assembly-community`, `aerobeat-environment-loader`, `aerobeat-environment-gaussian-splat`, and `aerobeat-environment-community`.
+- `6a3fd85` - `aerobeat-assembly-community` - `docs: record environment family switchover` (pushed to `origin/main`)
+- `af9e95f` - `aerobeat-environment-loader` - `docs: rename environment loader references` (pushed to `origin/main`)
+- `6001500` - `aerobeat-environment-gaussian-splat` - `chore: rename gaussian splat environment package references` (pushed to `origin/main`)
+- `48e971a` - `aerobeat-environment-community` - `chore: update environment community splat repo references` (rebased onto latest `origin/main` after a push race, then pushed successfully)
 
 **Lessons Learned:** Cross-repo rename work is manageable when the audit distinguishes active runtime/manifests from historical/archive notes. The extra gotcha here was local GodotEnv install state: repo-folder renames changed more than docs, so addon-path symlinks/caches needed an explicit repair step too.
 
