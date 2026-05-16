@@ -162,7 +162,7 @@ Validation run from the assembly repo root:
 
 Notable install nuance recorded truthfully: `godotenv addons install` emits a conflict warning when both the gaussian-splat repo root (`subfolder: "/"`) and its lower fulfillment subfolder (`subfolder: "/addons/aerobeat-environment-gaussian-splat-fulfillment"`) are installed from the same Git URL. In this validated run the install still completed successfully and materialized both required mount points, so the warning is informational rather than a blocker for this repo pass.
 
-Files changed in this task: `addons.jsonc`, this plan file. Commit hash will be recorded after commit/push.
+Files changed in this task: `addons.jsonc`, this plan file. Implementation commit: `865f89b` (`Add environment test scene dependencies`), pushed to `origin/main`.
 
 ---
 
