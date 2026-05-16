@@ -215,9 +215,39 @@ Files changed in this task: `addons.jsonc`, this plan file. Implementation commi
 **Files Created/Deleted/Modified:**
 - Plan updates only unless minimal QA-fix follow-ups are absolutely required
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** QA passed on the assembly-owned contract surface, with the known gaussian-splat renderer/runtime boundary kept honest (`REF-01`, `REF-02`, `REF-03`, `REF-05`, `REF-06`, `REF-07`). I re-ran the repo-local restore/install flow from scratch, re-imported the Godot project headlessly, then drove the new `scenes/tests/environment_contract_test_scene.tscn` through a throwaway headless QA harness that instantiated the real scene and exercised both the loader lane and the direct splat async lane instead of trusting prior summaries.
+
+**Commands run from `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community`:**
+- `bd update aerobeat-assembly-community-0ts --status in_progress --json`
+- `git log --oneline -n 8`
+- `./scripts/restore-addons.sh`
+- `find addons -maxdepth 1 -mindepth 1 -type d | sort`
+- `godot --headless --path . --import --quit-after 1000`
+- `godot --headless --path . --script /tmp/aerobeat_env_contract_qa.gd`
+
+**Evidence captured:**
+- Restore flow truthfully reinstalled the required environment-family dependencies from the root manifest: `addons/aerobeat-environment-core`, `addons/aerobeat-environment-loader`, `addons/aerobeat-environment-gaussian-splat`, `addons/aerobeat-environment-gaussian-splat-fulfillment`, and `addons/gdgs` were all present after `./scripts/restore-addons.sh`. The previously documented same-repo conflict warning for gaussian-splat + gaussian-splat-fulfillment reproduced, but install still completed successfully.
+- Headless import succeeded on Godot `4.6.2.stable.official.71f334935`, and the import log registered the expected contract/global classes including `AeroEnvironmentOperation`, `AeroEnvironmentProgress`, `AeroToolManager`, and `AeroGaussianSplatManager`.
+- The new scene really exists and loads from `scenes/tests/`: the QA harness loaded `res://scenes/tests/environment_contract_test_scene.tscn` as a `PackedScene`, instantiated it successfully, and verified the boundary label text explicitly says: `Loader lane proves png / ogv / glb / workout.yaml. Direct splat lane proves begin_fulfill + AeroEnvironmentOperation progress/state/phase. Visible splat rendering remains experimental / known-bug-boundary honest.`
+- Loader lane verification passed truthfully for all requested cases:
+  - PNG → success, `kind=image`, `format=.png`, final loader progress status `ready`
+  - OGV → success, `kind=video`, `format=.ogv`, final loader progress status `ready`
+  - GLB → success, `kind=glb`, `format=.glb`, `config_applied=true`, final loader progress status `ready`
+  - workout.yaml bridge → success, resolved to `res://fixtures/environment_contract/workout_yaml_valid_image/media/environments/demo.png`, returned `kind=image`, final loader progress status `ready`
+- Direct gaussian-splat async lane verification also passed truthfully:
+  - calling the scene’s direct lane produced a real `AeroEnvironmentOperation`
+  - the operation exposed the expected async signals (`started`, `progressed`, `succeeded`, `finished`)
+  - progress/state/phase/sequence evidence was real and ordered all the way through completion (`sequence` advanced monotonically through 1625 updates on this sample run)
+  - terminal operation state was `succeeded` with `latest_progress.state=succeeded`, `latest_progress.status=ready`, and `latest_progress.phase=ready`
+  - result details reported `point_count=2200000` and `config_applied=true`, so the lane really exercised `begin_fulfill(...)` plus the shared operation contract rather than a fake placeholder path
+- Overclaim check passed: the renderer-support note reported `support_level=unsupported` / `renderer=forward_plus`, and the scene’s success copy stayed honest: `Direct splat success: async contract completed. Visible render remains experimental / bug-boundary honest.`
+
+**Caveats worth preserving for audit:**
+- On this headless QA run, gaussian-splat visible rendering is still not a validated outcome. The renderer-support note said GDGS rendering is unavailable on the current renderer path, so this pass is strictly contract/plumbing proof.
+- The direct splat result completed successfully, but `result.details.world_environment_configured` remained `false` under this unsupported renderer path. That is acceptable for this QA pass because the requirement here is truthful async contract proof plus honest reporting, not compositor/renderer success.
+- The sample splat is large enough that the async lane is not a trivial smoke check; the QA harness had to allow a long-enough wait window for the background `building` phase to reach terminal `ready`.
 
 ---
 
@@ -233,27 +263,47 @@ Files changed in this task: `addons.jsonc`, this plan file. Implementation commi
 - Audit only expected
 
 **Files Created/Deleted/Modified:**
-- Plan updates only unless an audit retry is required
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/.plans/2026-05-16-assembly-community-environment-contract-test-scene.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Audit passed as **complete**, with the known gaussian-splat visible-render boundary still documented honestly (`REF-01`, `REF-02`, `REF-03`, `REF-05`, `REF-06`, `REF-07`). I did not trust the plan summaries alone: I re-ran the repo-local restore flow, re-imported the project headlessly, spot-checked the landed files/fixtures, and drove the real `scenes/tests/environment_contract_test_scene.tscn` through an independent headless audit harness.
+
+**Fresh audit evidence:**
+- `./scripts/restore-addons.sh` still performs the real repo-local restore contract: clear generated `addons/` + `.addons/`, then run `godotenv addons install`. Re-running it from scratch installed the required environment-family mount points under `addons/`: `aerobeat-environment-core`, `aerobeat-environment-loader`, `aerobeat-environment-gaussian-splat`, `aerobeat-environment-gaussian-splat-fulfillment`, and `gdgs`, alongside the pre-existing assembly deps.
+- The same-repo install warning for gaussian-splat + gaussian-splat-fulfillment reproduced exactly as previously reported, but install still completed successfully and materialized both required addon roots. That warning is real debt to remember, not a blocker for this rollout.
+- `godot --headless --path . --import --quit-after 1000` succeeded on Godot `4.6.2.stable.official.71f334935` and registered the expected contract/runtime classes including `AeroEnvironmentOperation`, `AeroEnvironmentProgress`, `AeroToolManager`, and `AeroGaussianSplatManager`.
+- `scenes/tests/environment_contract_test_scene.tscn` is real and coherent: it wires the assembly-local controller script, a loader-lane `AeroToolManager`, a direct gaussian-splat `AeroToolManager`, dedicated loader/splat world roots, and UI copy that explicitly says loader proves `png / ogv / glb / workout.yaml` while direct splat proves `begin_fulfill + AeroEnvironmentOperation progress/state/phase`, with visible splat rendering still marked experimental.
+- `src/environment_contract_test_scene.gd` keeps the two proof lanes honestly separated. Loader buttons call `load_environment(...)` / `load_environment_from_workout_yaml(...)`; the direct splat button calls `begin_fulfill(...)` on the gaussian-splat manager directly, subscribes to `started` / `progressed` / `succeeded` / `failed` / `finished`, and surfaces `state`, `status`, `phase`, `sequence`, `progress`, and `message` into the scene log.
+- Fixture scaffolding is real, not hand-waved: the repo contains assembly-local YAML/JSON glue plus symlinks to representative `.png`, `.ogv`, `.glb`, and `.compressed.ply` samples from the environment-community catalog.
+- Independent audit harness results matched the intended proving surface:
+  - loader PNG succeeded
+  - loader OGV succeeded
+  - loader GLB succeeded with config applied
+  - loader workout.yaml bridge succeeded and resolved to the repo-local `demo.png`
+  - direct gaussian-splat async lane returned a real operation, emitted 1600+ progress updates with advancing `sequence`, and completed successfully with `point_count=2200000` and `config_applied=true`
+  - renderer support stayed honest: `support_level=unsupported`, `renderer=forward_plus`, and the message still says visible splat rendering should not be expected on the current renderer path
+- Overclaim check passed: the scene summary copy says `Direct splat success: async contract completed. Visible render remains experimental / bug-boundary honest.` So the rollout proves contract plumbing and a truthful manual surface, not stable splat rendering.
+
+**Coherence / paperwork note:** Task 3’s file checklist still mentions `scripts/restore-addons.sh`, but the actual Task 3 narrative and commit `865f89b` correctly show that the restore-flow rollout was manifest-only in this repo pass. I treated that as a documentation over-listing, not an implementation mismatch.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** `aerobeat-assembly-community` now has an assembly-owned manual environment-contract proving surface at `scenes/tests/environment_contract_test_scene.tscn`, plus repo-local fixture scaffolding and root-manifest dependency wiring so Derrick can restore the required environment-family addons and manually exercise two truthful lanes: loader-driven `png / ogv / glb / workout.yaml` integration and direct gaussian-splat async contract integration.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-01`, `REF-02`, and `REF-03` are satisfied by the landed assembly repo state: the root manifest installs the required environment-family addons and the restore wrapper still works reproducibly. `REF-05`, `REF-06`, and `REF-07` are satisfied by actual consumer usage rather than prose alone: the assembly scene imports the shared environment contract packages, uses the loader for the generic lane, and uses the gaussian-splat wrapper directly for the async `begin_fulfill(...)` lane. The rollout deliberately preserves the `REF-06` bug boundary by reporting renderer support truthfully and avoiding any claim of stable visible splat rendering.
 
 **Commits:**
-- Pending
+- `865f89b` - Add environment test scene dependencies
+- `1e34dcf` - Add environment contract test scene
+- `b7d9e42` - Update environment test scene plan evidence
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** Keep consumer-repo integration proof lanes separate when one backend still has a known renderer/runtime bug; otherwise the test surface lies by implication. Also, same-repo multi-subfolder addon installs are workable here but noisy enough that future cleanup should either remove the warning path or document it more centrally.
 
 ---
 
-*Completed on Pending*
+*Completed on 2026-05-16*
