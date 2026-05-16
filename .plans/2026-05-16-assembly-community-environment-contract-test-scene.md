@@ -121,14 +121,49 @@ The owning repo for this work should be `aerobeat-assembly-community`, because t
 
 **Folders Created/Deleted/Modified:**
 - `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/scenes/tests/`
-- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/src/` or other helper folders if truly needed
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/src/`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/`
 
 **Files Created/Deleted/Modified:**
-- Scene/script/resource files to be determined by Task 1
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/scenes/tests/environment_contract_test_scene.tscn`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/src/environment_contract_test_scene.gd`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/src/environment_contract_test_scene.gd.uid`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/images/perfect-hue-may-14-2026.png` (symlink)
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/images/perfect-hue-may-14-2026.png.import`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/videos/calm_blue_sea_1.ogv` (symlink)
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/videos/calm_blue_sea_1.ogv.uid`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/models/alien-planet.glb` (symlink)
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/models/alien-planet.glb.import`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/models/alien-planet_0.jpg` (symlink)
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/models/alien-planet_0.jpg.import`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/models/alien-planet.json`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/splats/CountrySide farm.compressed.ply` (symlink)
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/assets/splats/CountrySide farm.json`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/workout_yaml_valid_image/workout.yaml`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/workout_yaml_valid_image/sets/ab-set-image-demo-round.yaml`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/workout_yaml_valid_image/environments/ab-environment-image-demo.yaml`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/workout_yaml_valid_image/media/environments/demo.png` (symlink)
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/fixtures/environment_contract/workout_yaml_valid_image/media/environments/demo.png.import`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Implemented an assembly-owned manual proof surface that keeps the two required lanes separate and honest (`REF-01`, `REF-05`, `REF-06`, `REF-07`). The new `scenes/tests/environment_contract_test_scene.tscn` + `src/environment_contract_test_scene.gd` scene mirrors the addon testbed control-panel shape enough to be usable, but narrows scope to exactly what Derrick asked for: loader-lane buttons for PNG / OGV / GLB / workout.yaml and a separate direct gaussian-splat async button that calls `begin_fulfill(...)` on the gaussian-splat tool wrapper instead of pretending the loader’s current splat placeholder is sufficient proof.
+
+The scene mounts loader-created 2D/3D content onto dedicated loader roots, mounts direct splat results onto a separate `SplatWorldRoot`, surfaces the renderer-support note from `get_renderer_support_status()`, and logs contract-facing async evidence (`state`, `status`, `phase`, `sequence`, `progress`, `message`) from the returned `AeroEnvironmentOperation`. The success copy and status notes explicitly preserve the known bug boundary: a successful direct async fulfill / node attach is treated as plumbing proof only, not stable visible splat rendering proof.
+
+Added repo-local fixture scaffolding under `fixtures/environment_contract/` using symlinks to representative environment-community sample binaries where practical, plus tiny assembly-owned YAML/JSON glue files for the workout package and config sidecars. This keeps the assembly repo self-describing without copying large binaries into source control.
+
+Validation run from the assembly repo root:
+- `godot --headless --path . --import --quit-after 1000` ✅
+- Headless runtime smoke script instantiating `res://scenes/tests/environment_contract_test_scene.tscn` and programmatically driving both lanes ✅
+  - loader PNG ✅
+  - loader OGV ✅
+  - loader GLB ✅
+  - loader workout.yaml bridge ✅
+  - direct splat async `begin_fulfill(...)` / `AeroEnvironmentOperation` completion ✅
+- Validation renderer note stayed honest in headless mode: `support_level=unsupported`, `renderer=forward_plus`, with the expected message that GDGS visible rendering is unavailable on the current renderer path even though async load plumbing succeeded.
+
+Implementation commit: `fd180f1` (`Add environment contract test scene`).
 
 ---
 

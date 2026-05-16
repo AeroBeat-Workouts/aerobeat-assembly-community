@@ -1,0 +1,169 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/environment_contract_test_scene.gd" id="1_controller"]
+[ext_resource type="Script" path="res://addons/aerobeat-environment-loader/src/AeroToolManager.gd" id="2_loader"]
+[ext_resource type="Script" path="res://addons/aerobeat-environment-gaussian-splat/src/AeroToolManager.gd" id="3_splat"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.04, 0.05, 0.08, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 0.35
+
+[node name="EnvironmentContractTestScene" type="Node"]
+script = ExtResource("1_controller")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="WorldRoot" type="Node3D" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldRoot"]
+rotation = Vector3(-0.785398, 0.523599, 0)
+light_energy = 2.0
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="WorldRoot"]
+position = Vector3(0, 1.8, 5.5)
+rotation_degrees = Vector3(-8, 0, 0)
+current = true
+
+[node name="LoaderWorldRoot" type="Node3D" parent="WorldRoot"]
+
+[node name="SplatWorldRoot" type="Node3D" parent="WorldRoot"]
+
+[node name="LoaderToolManager" type="Node" parent="."]
+script = ExtResource("2_loader")
+canvas_root_path = NodePath("../CanvasLayer/LoaderCanvasRoot")
+world_root_path = NodePath("../WorldRoot/LoaderWorldRoot")
+create_default_roots = false
+
+[node name="SplatToolManager" type="Node" parent="."]
+script = ExtResource("3_splat")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="LoaderCanvasRoot" type="Control" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+mouse_filter = 2
+
+[node name="Ui" type="Control" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="CanvasLayer/Ui"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 604.0
+offset_bottom = 744.0
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/Ui/Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/Ui/Panel/Margin"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+size_flags_vertical = 3
+
+[node name="TitleLabel" type="Label" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+theme_override_font_sizes/font_size = 22
+text = "Assembly Environment Contract Test Scene"
+
+[node name="BoundaryLabel" type="Label" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+text = "Manual integration proof surface. Loader lane proves png / ogv / glb / workout.yaml. Direct splat lane proves begin_fulfill + AeroEnvironmentOperation progress/state/phase. Visible splat rendering remains experimental / known-bug-boundary honest."
+autowrap_mode = 3
+
+[node name="RendererSupportLabel" type="Label" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+text = "Renderer support: (pending)"
+autowrap_mode = 3
+
+[node name="CurrentLoaderAssetLabel" type="Label" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+text = "Loader lane asset: (none)"
+autowrap_mode = 3
+
+[node name="CurrentSplatAssetLabel" type="Label" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+text = "Direct splat asset: (none)"
+autowrap_mode = 3
+
+[node name="SamplePathsLabel" type="Label" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+text = "Sample fixtures: (pending)"
+autowrap_mode = 3
+
+[node name="LoaderLaneLabel" type="Label" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+theme_override_font_sizes/font_size = 18
+text = "Loader lane"
+
+[node name="LoaderSummaryLabel" type="Label" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+text = "Loader lane idle."
+autowrap_mode = 3
+
+[node name="LoaderButtonsRowOne" type="HBoxContainer" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+
+[node name="LoadPngButton" type="Button" parent="CanvasLayer/Ui/Panel/Margin/VBox/LoaderButtonsRowOne"]
+text = "Load PNG"
+
+[node name="LoadOgvButton" type="Button" parent="CanvasLayer/Ui/Panel/Margin/VBox/LoaderButtonsRowOne"]
+text = "Load OGV"
+
+[node name="LoadGlbButton" type="Button" parent="CanvasLayer/Ui/Panel/Margin/VBox/LoaderButtonsRowOne"]
+text = "Load GLB"
+
+[node name="LoaderButtonsRowTwo" type="HBoxContainer" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+
+[node name="LoadWorkoutYamlButton" type="Button" parent="CanvasLayer/Ui/Panel/Margin/VBox/LoaderButtonsRowTwo"]
+text = "Load workout.yaml"
+
+[node name="ClearLoaderButton" type="Button" parent="CanvasLayer/Ui/Panel/Margin/VBox/LoaderButtonsRowTwo"]
+text = "Clear loader lane"
+
+[node name="SplatLaneLabel" type="Label" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+theme_override_font_sizes/font_size = 18
+text = "Direct gaussian-splat async lane"
+
+[node name="SplatSummaryLabel" type="Label" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+text = "Direct splat lane idle."
+autowrap_mode = 3
+
+[node name="SplatButtonsRow" type="HBoxContainer" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+
+[node name="StartDirectSplatButton" type="Button" parent="CanvasLayer/Ui/Panel/Margin/VBox/SplatButtonsRow"]
+text = "Begin direct splat async"
+
+[node name="ClearDirectSplatButton" type="Button" parent="CanvasLayer/Ui/Panel/Margin/VBox/SplatButtonsRow"]
+text = "Clear direct splat"
+
+[node name="RefreshRendererNoteButton" type="Button" parent="CanvasLayer/Ui/Panel/Margin/VBox/SplatButtonsRow"]
+text = "Refresh renderer note"
+
+[node name="StatusLog" type="RichTextLabel" parent="CanvasLayer/Ui/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 300)
+size_flags_vertical = 3
+bbcode_enabled = false
+scroll_following = true
+
+[connection signal="pressed" from="CanvasLayer/Ui/Panel/Margin/VBox/LoaderButtonsRowOne/LoadPngButton" to="." method="_on_load_png_pressed"]
+[connection signal="pressed" from="CanvasLayer/Ui/Panel/Margin/VBox/LoaderButtonsRowOne/LoadOgvButton" to="." method="_on_load_ogv_pressed"]
+[connection signal="pressed" from="CanvasLayer/Ui/Panel/Margin/VBox/LoaderButtonsRowOne/LoadGlbButton" to="." method="_on_load_glb_pressed"]
+[connection signal="pressed" from="CanvasLayer/Ui/Panel/Margin/VBox/LoaderButtonsRowTwo/LoadWorkoutYamlButton" to="." method="_on_load_workout_yaml_pressed"]
+[connection signal="pressed" from="CanvasLayer/Ui/Panel/Margin/VBox/LoaderButtonsRowTwo/ClearLoaderButton" to="." method="_on_clear_loader_pressed"]
+[connection signal="pressed" from="CanvasLayer/Ui/Panel/Margin/VBox/SplatButtonsRow/StartDirectSplatButton" to="." method="_on_start_direct_splat_pressed"]
+[connection signal="pressed" from="CanvasLayer/Ui/Panel/Margin/VBox/SplatButtonsRow/ClearDirectSplatButton" to="." method="_on_clear_direct_splat_pressed"]
+[connection signal="pressed" from="CanvasLayer/Ui/Panel/Margin/VBox/SplatButtonsRow/RefreshRendererNoteButton" to="." method="_on_refresh_renderer_note_pressed"]
