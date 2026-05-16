@@ -20,7 +20,7 @@ From repo inspection, the environment lane already has a useful truth surface: `
 
 Based on those patterns, the recommended MVP is:
 1. add a default-environment performance classifier singleton plus diagnostic testbed to `aerobeat-tool-settings`
-2. create `aerobeat-tool-environment` as the stable image/video/GLB/splat environment wrapper with a single demo scene and sibling asset JSON contracts
+2. create `aerobeat-environment-loader` as the stable image/video/GLB/splat environment wrapper with a single demo scene and sibling asset JSON contracts
 3. wire those into `aerobeat-assembly-community` so startup immediately picks and loads the default tier behind a logo/intermediate scene
 4. create `aerobeat-tool-camera-gesture-control` as a separate contract-driven gesture-parallax/testbed tool
 5. keep richer workout fallback authoring and UX flows explicitly post-v1
@@ -36,9 +36,9 @@ Based on those patterns, the recommended MVP is:
 | `REF-03` | Existing settings tool repo where the performance classifier singleton should live | `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-settings` |
 | `REF-04` | Existing input contract repo that defines the camera-control-facing contract boundary | `/home/derrick/Documents/projects/aerobeat/aerobeat-input-core` |
 | `REF-05` | Existing MediaPipe Python repo that the camera-gesture-control testbed should use via GodotEnv | `/home/derrick/Documents/projects/aerobeat/aerobeat-input-mediapipe-python` |
-| `REF-06` | Existing Gaussian splat tool repo / GDGS integration path relevant to splat support | `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-gaussian-splat` |
+| `REF-06` | Existing Gaussian splat tool repo / GDGS integration path relevant to splat support | `/home/derrick/Documents/projects/aerobeat/aerobeat-environment-gaussian-splat` |
 | `REF-07` | New reusable camera gesture control repo | `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-camera-gesture-control` |
-| `REF-08` | New reusable environment loading/swapping repo | `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-environment` |
+| `REF-08` | New reusable environment loading/swapping repo | `/home/derrick/Documents/projects/aerobeat/aerobeat-environment-loader` |
 
 ---
 
@@ -69,7 +69,7 @@ Recommended manifests for this work:
 
 - `aerobeat-tool-settings`: keep current narrow pattern; add only what the classifier testbed really needs
 - `aerobeat-tool-camera-gesture-control`: self + `aerobeat-input-core` + `aerobeat-input-mediapipe-python` + `gut`
-- `aerobeat-tool-environment`: self + `aerobeat-tool-gaussian-splat` + `gdgs` vendor pin if needed transitively + `gut`; optionally `aerobeat-asset-core` if environment metadata DTOs are formalized there
+- `aerobeat-environment-loader`: self + `aerobeat-environment-gaussian-splat` + `gdgs` vendor pin if needed transitively + `gut`; optionally `aerobeat-asset-core` if environment metadata DTOs are formalized there
 
 ### UI / proving conventions
 
@@ -349,7 +349,7 @@ and provide a left-side control panel with:
 
 Use a simple GLB or sample splat environment from `REF-02` so the parallax motion is visible against clear depth cues.
 
-### 3) `aerobeat-tool-environment` — unified environment wrapper
+### 3) `aerobeat-environment-loader` — unified environment wrapper
 
 **Repo sync status**
 
@@ -638,7 +638,7 @@ Validate:
 - control clamps prevent disorienting camera motion
 - tracking loss cleanly recenters or freezes according to chosen policy
 
-### `aerobeat-tool-environment`
+### `aerobeat-environment-loader`
 
 Validate:
 
@@ -665,7 +665,7 @@ Validate:
    - lowest dependency risk
    - produces the tier recommendation API assembly will depend on
 
-2. **`aerobeat-tool-environment` unified manager + sample testbed**
+2. **`aerobeat-environment-loader` unified manager + sample testbed**
    - proves the actual high/medium/low environment rung behavior in isolation
    - formalizes the sibling JSON contracts before assembly depends on them
 
@@ -762,13 +762,13 @@ These items should stay documented but not block MVP:
 
 ---
 
-### Task 4: Plan the new `aerobeat-tool-environment` repo and multi-format environment singleton
+### Task 4: Plan the new `aerobeat-environment-loader` repo and multi-format environment singleton
 
 **Bead ID:** `aerobeat-assembly-community-nbl`  
 **SubAgent:** `primary` (for `research` workflow role)  
 **Role:** `research`  
 **References:** `REF-02`, `REF-06`, `REF-08`, `REF-09`  
-**Prompt:** Plan the new `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-environment` repo. Define the runtime singleton in `/src/` for loading/swapping AeroBeat-supported `.png`, `.ogv`, `.glb`, and `.compressed.ply` environments; specify full-screen image/video behavior (cover without letterboxing); define separate sibling config contracts for GLB and splat environment transforms/config; decide how the repo should remain generic while also conveniently ingesting AeroBeat workout-environment YAML/metadata through the content-core contract path; include progress/status reporting for long loads; and design the `.testbed/` scene with one sample image, video, GLB, and splat pulled from `aerobeat-environment-community`.
+**Prompt:** Plan the new `/home/derrick/Documents/projects/aerobeat/aerobeat-environment-loader` repo. Define the runtime singleton in `/src/` for loading/swapping AeroBeat-supported `.png`, `.ogv`, `.glb`, and `.compressed.ply` environments; specify full-screen image/video behavior (cover without letterboxing); define separate sibling config contracts for GLB and splat environment transforms/config; decide how the repo should remain generic while also conveniently ingesting AeroBeat workout-environment YAML/metadata through the content-core contract path; include progress/status reporting for long loads; and design the `.testbed/` scene with one sample image, video, GLB, and splat pulled from `aerobeat-environment-community`.
 
 **Folders Created/Deleted/Modified:**
 - Planning/docs only expected
@@ -841,11 +841,16 @@ Design fork resolved: for the default shell/background and for workout environme
 
 ---
 
+## Locked Filename Convention Note
+
+
+- sidecar filename convention preference: basename-style config naming (for example `my_scene.json` beside `my_scene.glb`) rather than extension-appended variants like `my_scene.glb.json`
+
 ## Final Results
 
 **Status:** ✅ Complete
 
-**What We Built:** A concrete implementation roadmap for the default environment fallback ladder across `aerobeat-tool-settings`, `aerobeat-tool-environment`, `aerobeat-tool-camera-gesture-control`, and `aerobeat-assembly-community`, grounded in the actual current AeroBeat repo conventions and testbed patterns.
+**What We Built:** A concrete implementation roadmap for the default environment fallback ladder across `aerobeat-tool-settings`, `aerobeat-environment-loader`, `aerobeat-tool-camera-gesture-control`, and `aerobeat-assembly-community`, grounded in the actual current AeroBeat repo conventions and testbed patterns.
 
 **Reference Check:** `REF-01` through `REF-08` were inspected and mapped into the proposed repo shapes, testbed structures, contracts, and integration design. No implementation code was added; this was planning/research only.
 

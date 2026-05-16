@@ -8,7 +8,7 @@
 
 ## Goal
 
-Coordinate parallel implementation of the three reusable AeroBeat Lego-piece repos — `aerobeat-tool-settings`, `aerobeat-tool-environment`, and `aerobeat-tool-camera-gesture-control` — while locking shared contracts early enough to prevent drift.
+Coordinate parallel implementation of the three reusable AeroBeat Lego-piece repos — `aerobeat-tool-settings`, `aerobeat-environment-loader`, and `aerobeat-tool-camera-gesture-control` — while locking shared contracts early enough to prevent drift.
 
 ---
 
@@ -16,7 +16,7 @@ Coordinate parallel implementation of the three reusable AeroBeat Lego-piece rep
 
 Derrick approved the overall direction: do not optimize around `assembly-community` integration yet. The immediate objective is to build the three reusable tool repos, prove them in their own hidden `.testbed/` projects, and make sure their APIs, event payloads, and file/config contracts line up cleanly.
 
-That means the work should run in parallel, but not chaotically. A short contract-lock pass should go first, freezing the minimum shared connector shapes: performance recommendation events from `aerobeat-tool-settings`, environment request/result/error/progress contracts from `aerobeat-tool-environment`, and tuning/profile/runtime API shapes from `aerobeat-tool-camera-gesture-control`. Once those are written down, each repo can move independently with its own coder → QA → auditor loop.
+That means the work should run in parallel, but not chaotically. A short contract-lock pass should go first, freezing the minimum shared connector shapes: performance recommendation events from `aerobeat-tool-settings`, environment request/result/error/progress contracts from `aerobeat-environment-loader`, and tuning/profile/runtime API shapes from `aerobeat-tool-camera-gesture-control`. Once those are written down, each repo can move independently with its own coder → QA → auditor loop.
 
 This coordination plan is the umbrella record. The implementation details for each lane live in repo-local plans inside the owning repos, but this file keeps the shared order, dependencies, checkpoints, and cross-repo decisions visible in one place.
 
@@ -29,10 +29,10 @@ This coordination plan is the umbrella record. The implementation details for ea
 | `REF-01` | Higher-level fallback/design roadmap | `/home/derrick/Documents/projects/aerobeat/aerobeat-assembly-community/.plans/2026-05-15-default-environment-fallback-ladder.md` |
 | `REF-02` | First-slice implementation plan for performance classifier | `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-settings/.plans/2026-05-15-performance-classifier-first-slice.md` |
 | `REF-03` | Tool settings repo | `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-settings` |
-| `REF-04` | Tool environment repo | `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-environment` |
+| `REF-04` | Tool environment repo | `/home/derrick/Documents/projects/aerobeat/aerobeat-environment-loader` |
 | `REF-05` | Tool camera gesture control repo | `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-camera-gesture-control` |
 | `REF-06` | Content-core contract source for workout environment metadata | `/home/derrick/Documents/projects/aerobeat/aerobeat-content-core` |
-| `REF-07` | Gaussian splat integration repo whose progress semantics may be reused | `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-gaussian-splat` |
+| `REF-07` | Gaussian splat integration repo whose progress semantics may be reused | `/home/derrick/Documents/projects/aerobeat/aerobeat-environment-gaussian-splat` |
 | `REF-08` | MediaPipe Python repo used via GodotEnv in camera-control testbed | `/home/derrick/Documents/projects/aerobeat/aerobeat-input-mediapipe-python` |
 | `REF-09` | Input-core contract boundary for camera control | `/home/derrick/Documents/projects/aerobeat/aerobeat-input-core` |
 
@@ -106,7 +106,7 @@ Policy lock:
 
 ### Contract Lock B — Environment Load Contract
 
-Owner: `aerobeat-tool-environment`
+Owner: `aerobeat-environment-loader`
 
 Locked runtime surface:
 
@@ -334,17 +334,17 @@ Locked testbed tunable field list:
 
 ---
 
-### Lane 2: `aerobeat-tool-environment`
+### Lane 2: `aerobeat-environment-loader`
 
-**Bead ID:** `aerobeat-tool-environment-0qw`  
+**Bead ID:** `aerobeat-environment-loader-0qw`  
 **SubAgent:** `primary` (for `coder` workflow role)  
 **Role:** `coder`  
 **References:** `REF-04`, `REF-06`, `REF-07`  
 **Prompt:** Implement the environment tool as a generic loader plus AeroBeat workout-YAML convenience consumer. Build request/result/error/progress contracts, separate GLB vs splat sidecar config handling, and the hidden `.testbed/` proving scene for `.png`, `.ogv`, `.glb`, and `.compressed.ply`. Reuse/adapt splat loading progress semantics from the Gaussian splat integration path where practical.
 
 **Folders Created/Deleted/Modified:**
-- `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-environment/src/`
-- `/home/derrick/Documents/projects/aerobeat/aerobeat-tool-environment/.testbed/`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-environment-loader/src/`
+- `/home/derrick/Documents/projects/aerobeat/aerobeat-environment-loader/.testbed/`
 
 **Files Created/Deleted/Modified:**
 - runtime/testbed/test files per repo-local plan
@@ -400,7 +400,7 @@ Locked testbed tunable field list:
 
 This umbrella coordination plan is paired with:
 - `aerobeat-tool-settings/.plans/2026-05-15-performance-classifier-first-slice.md`
-- `aerobeat-tool-environment/.plans/2026-05-15-environment-tool-first-implementation-lane.md`
+- `aerobeat-environment-loader/.plans/2026-05-15-environment-tool-first-implementation-lane.md`
 - `aerobeat-tool-camera-gesture-control/.plans/2026-05-15-camera-gesture-control-first-implementation-lane.md`
 
 Those repo-local plans should own the concrete file-level implementation steps, while this coordination plan owns the shared order and contract checkpoints.
@@ -426,6 +426,11 @@ Those repo-local plans should own the concrete file-level implementation steps, 
 - sidecar config names diverging between GLB and splat handling in awkward ways
 
 ---
+
+## Locked Filename Convention Note
+
+
+- sidecar filename convention preference: basename-style config naming (for example `my_scene.json` beside `my_scene.glb`) rather than extension-appended variants like `my_scene.glb.json`
 
 ## Final Results
 
