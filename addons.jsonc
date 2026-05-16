@@ -19,6 +19,43 @@
       "checkout": "80ed9ce8f6e845d619595512da3f2300f3551061",
       "subfolder": "/"
     },
+    // Shared environment contract package used by both the generic loader lane
+    // and the direct gaussian-splat async fulfillment lane for the assembly
+    // environment-contract test scene. `main` is intentional until the new
+    // environment family starts cutting release tags.
+    "aerobeat-environment-core": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-environment-core.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
+    // Generic environment loader/orchestrator package for png/ogv/glb plus the
+    // workout-YAML translation lane used by the assembly test scene.
+    "aerobeat-environment-loader": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-environment-loader.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
+    // AeroBeat-facing gaussian-splat wrapper package. The repo-root package is
+    // needed for the direct async lane, but it intentionally extends into the
+    // lower fulfillment package mounted separately below.
+    "aerobeat-environment-gaussian-splat": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-environment-gaussian-splat.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
+    // Install the lower fulfillment package exactly where the public wrapper
+    // expects it: res://addons/aerobeat-environment-gaussian-splat-fulfillment/.
+    "aerobeat-environment-gaussian-splat-fulfillment": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-environment-gaussian-splat.git",
+      "checkout": "main",
+      "subfolder": "/addons/aerobeat-environment-gaussian-splat-fulfillment"
+    },
+    // Pinned vendor payload required by the lower fulfillment runtime.
+    "gdgs": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-gdgs.git",
+      "checkout": "main",
+      "subfolder": "/addons/gdgs"
+    },
     // Install only the upstream Godot addon subtree so the project receives
     // res://addons/openclaw/ instead of the repo root helper/tooling folders.
     "openclaw": {
