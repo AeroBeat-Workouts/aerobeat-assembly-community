@@ -163,7 +163,7 @@ Validation run from the assembly repo root:
   - direct splat async `begin_fulfill(...)` / `AeroEnvironmentOperation` completion ✅
 - Validation renderer note stayed honest in headless mode: `support_level=unsupported`, `renderer=forward_plus`, with the expected message that GDGS visible rendering is unavailable on the current renderer path even though async load plumbing succeeded.
 
-Implementation commit: `fd180f1` (`Add environment contract test scene`).
+Implementation commit: `1e34dcf` (`Add environment contract test scene`).
 
 ---
 
