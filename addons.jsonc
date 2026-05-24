@@ -35,6 +35,24 @@
       "checkout": "main",
       "subfolder": "/"
     },
+    // Shared video stack required by the environment loader's refactored OGV path.
+    // Keep these mounted explicitly in assembly because GodotEnv consumer manifests
+    // are resolved per project rather than as an implicit transitive addon install.
+    "aerobeat-tool-core": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-tool-core.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
+    "aerobeat-tool-video-player": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-tool-video-player.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
+    "aerobeat-vendor-godot-video": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-godot-video.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
     // AeroBeat-facing gaussian-splat wrapper package. The repo-root package is
     // needed for the direct async lane, but it intentionally extends into the
     // lower fulfillment package mounted separately below.
