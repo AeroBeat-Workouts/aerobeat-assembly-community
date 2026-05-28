@@ -8,15 +8,13 @@
       "checkout": "v0.1.3",
       "subfolder": "/"
     },
-    // Compatibility alias: the assembly currently loads this addon from
-    // res://addons/aerobeat-input-mediapipe/, but the owning repo still lives at
-    // aerobeat-input-mediapipe-python and remains intentionally deferred from the
-    // broader migration wave. Pin this proof pass to the exact source commit that
-    // flips the upstream proof scene to tracking-by-default so consumer refreshes
-    // are reproducible during Cookie retest.
+    // Compatibility alias: the assembly still loads this addon from
+    // res://addons/aerobeat-input-mediapipe/, but the canonical repo now lives
+    // at aerobeat-input-camera-tracking. Keep the installed addon directory key
+    // stable while sourcing the renamed repo.
     "aerobeat-input-mediapipe": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-mediapipe-python.git",
-      "checkout": "80ed9ce8f6e845d619595512da3f2300f3551061",
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-camera-tracking.git",
+      "checkout": "5bbdf2575c31eab03ea528f4826c1d159f47a1fe",
       "subfolder": "/"
     },
     // Shared environment contract package used by both the generic loader lane
@@ -53,22 +51,15 @@
       "checkout": "main",
       "subfolder": "/"
     },
-    // AeroBeat-facing gaussian-splat wrapper package. The repo-root package is
-    // needed for the direct async lane, but it intentionally extends into the
-    // lower fulfillment package mounted separately below.
-    "aerobeat-environment-gaussian-splat": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-environment-gaussian-splat.git",
+    // AeroBeat-facing gaussian-splat wrapper package. The repo now ships the
+    // public manager and contract fulfillment surface directly from the tool
+    // repo root, so the assembly mounts only the canonical addon package.
+    "aerobeat-tool-gaussian-splat-loader": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-tool-gaussian-splat-loader.git",
       "checkout": "main",
       "subfolder": "/"
     },
-    // Install the lower fulfillment package exactly where the public wrapper
-    // expects it: res://addons/aerobeat-environment-gaussian-splat-fulfillment/.
-    "aerobeat-environment-gaussian-splat-fulfillment": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-environment-gaussian-splat.git",
-      "checkout": "main",
-      "subfolder": "/addons/aerobeat-environment-gaussian-splat-fulfillment"
-    },
-    // Pinned vendor payload required by the lower fulfillment runtime.
+    // Pinned vendor payload required by the gaussian-splat runtime.
     "gdgs": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-gdgs.git",
       "checkout": "main",
