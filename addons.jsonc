@@ -33,6 +33,28 @@
       "checkout": "main",
       "subfolder": "/"
     },
+    // Shared image stack required by the environment loader's refactored PNG path.
+    "aerobeat-tool-image-loader": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-tool-image-loader.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
+    "aerobeat-vendor-godot-image": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-godot-image.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
+    // Shared GLTF stack required by the environment loader's refactored GLB path.
+    "aerobeat-tool-gltf-loader": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-tool-gltf-loader.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
+    "aerobeat-vendor-godot-gltf": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-godot-gltf.git",
+      "checkout": "main",
+      "subfolder": "/"
+    },
     // Shared video stack required by the environment loader's refactored OGV path.
     // Keep these mounted explicitly in assembly because GodotEnv consumer manifests
     // are resolved per project rather than as an implicit transitive addon install.
@@ -63,7 +85,7 @@
     "gdgs": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-gdgs.git",
       "checkout": "main",
-      "subfolder": "/addons/gdgs"
+      "subfolder": "/gdgs"
     },
     // Install only the upstream Godot addon subtree so the project receives
     // res://addons/openclaw/ instead of the repo root helper/tooling folders.

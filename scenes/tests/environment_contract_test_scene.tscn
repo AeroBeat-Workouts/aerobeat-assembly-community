@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://src/environment_contract_test_scene.gd" id="1_controller"]
 [ext_resource type="Script" path="res://addons/aerobeat-environment-loader/src/AeroEnvironmentLoader.gd" id="2_loader"]
-[ext_resource type="Script" path="res://addons/aerobeat-tool-gaussian-splat-loader/src/AeroToolManager.gd" id="3_splat"]
+[ext_resource type="Script" path="res://addons/aerobeat-tool-gaussian-splat-loader/src/AeroGaussianSplatManager.gd" id="3_splat"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1

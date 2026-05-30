@@ -1,5 +1,7 @@
 extends Node
 
+const AeroGaussianSplatEnvironmentFulfillment = preload("res://addons/aerobeat-tool-gaussian-splat-loader/src/AeroGaussianSplatEnvironmentFulfillment.gd")
+
 const SAMPLE_IMAGE_PATH := "res://fixtures/environment_contract/assets/images/perfect-hue-may-14-2026.png"
 const SAMPLE_VIDEO_PATH := "res://fixtures/environment_contract/assets/videos/calm_blue_sea_1.ogv"
 const SAMPLE_GLB_PATH := "res://fixtures/environment_contract/assets/models/alien-planet.glb"
@@ -9,7 +11,7 @@ const SAMPLE_SPLAT_PATH := "res://fixtures/environment_contract/assets/splats/Co
 const SAMPLE_SPLAT_CONFIG_PATH := "res://fixtures/environment_contract/assets/splats/CountrySide farm.json"
 
 @onready var loader_tool_manager: Node = $LoaderToolManager
-@onready var splat_tool_manager: Node = $SplatToolManager
+@onready var splat_tool_manager: AeroGaussianSplatManager = $SplatToolManager
 @onready var world_environment: WorldEnvironment = $WorldEnvironment
 @onready var loader_summary_label: Label = $CanvasLayer/Ui/Panel/Margin/VBox/LoaderSummaryLabel
 @onready var splat_summary_label: Label = $CanvasLayer/Ui/Panel/Margin/VBox/SplatSummaryLabel
@@ -20,11 +22,13 @@ const SAMPLE_SPLAT_CONFIG_PATH := "res://fixtures/environment_contract/assets/sp
 @onready var status_log: RichTextLabel = $CanvasLayer/Ui/Panel/Margin/VBox/StatusLog
 @onready var splat_world_root: Node3D = $WorldRoot/SplatWorldRoot
 
+var _splat_fulfillment: AeroGaussianSplatEnvironmentFulfillment
 var _current_splat_node: Node = null
 var _active_splat_operation: Variant = null
 var _splat_load_in_flight: bool = false
 
 func _ready() -> void:
+	_splat_fulfillment = AeroGaussianSplatEnvironmentFulfillment.new(splat_tool_manager)
 	loader_tool_manager.environment_load_started.connect(_on_loader_load_started)
 	loader_tool_manager.environment_load_progress.connect(_on_loader_load_progress)
 	loader_tool_manager.environment_load_succeeded.connect(_on_loader_load_succeeded)
@@ -83,7 +87,7 @@ func _on_start_direct_splat_pressed() -> void:
 	_clear_direct_splat_node(false)
 	current_splat_asset_label.text = "Direct splat asset: %s" % SAMPLE_SPLAT_PATH
 	splat_summary_label.text = "Direct splat lane queued. Watching AeroEnvironmentOperation state / status / phase updates..."
-	var operation: Variant = splat_tool_manager.begin_fulfill({
+	var operation: Variant = _splat_fulfillment.begin_fulfill({
 		"request_id": "direct-splat-demo",
 		"kind": "splat",
 		"asset_path": SAMPLE_SPLAT_PATH,
@@ -127,7 +131,7 @@ func _on_refresh_renderer_note_pressed() -> void:
 
 func _load_loader_request(kind: String, asset_path: String, config_path: String, request_id: String) -> void:
 	current_loader_asset_label.text = "Loader lane asset: %s" % asset_path
-	loader_summary_label.text = "Loader lane resolving %s through AeroToolManager." % kind
+	loader_summary_label.text = "Loader lane resolving %s through AeroEnvironmentLoader." % kind
 	_append_status("LOADER BEGIN kind=%s asset=%s config=%s" % [kind, asset_path, config_path])
 	loader_tool_manager.load_environment({
 		"request_id": request_id,
