@@ -85,7 +85,7 @@
     "aerobeat-vendor-gdgs": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-gdgs.git",
       "checkout": "main",
-      "subfolder": "/src"
+      "subfolder": "/"
     },
     // Install only the upstream Godot addon subtree so the project receives
     // res://addons/openclaw/ instead of the repo root helper/tooling folders.
