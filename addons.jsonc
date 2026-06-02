@@ -1,100 +1,76 @@
 {
   "$schema": "https://chickensoft.games/schemas/addons.schema.json",
   "addons": {
-    // Truthful install key/path: the assembly now loads this package from
-    // res://addons/aerobeat-input-core/.
     "aerobeat-input-core": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-core.git",
-      "checkout": "v0.1.3",
-      "subfolder": "/"
+      "url": "../aerobeat-input-core",
+      "subfolder": "/",
+      "source": "symlink"
     },
-    // Compatibility alias: the assembly still loads this addon from
-    // res://addons/aerobeat-input-mediapipe/, but the canonical repo now lives
-    // at aerobeat-input-camera-tracking. Keep the installed addon directory key
-    // stable while sourcing the renamed repo.
     "aerobeat-input-mediapipe": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-camera-tracking.git",
-      "checkout": "4f63ccd2d131d4192e9675fd6a78572780a7ec0f",
-      "subfolder": "/"
+      "url": "../aerobeat-input-camera-tracking",
+      "subfolder": "/",
+      "source": "symlink"
     },
-    // Shared environment contract package used by both the generic loader lane
-    // and the direct gaussian-splat async fulfillment lane for the assembly
-    // environment-contract test scene. `main` is intentional until the new
-    // environment family starts cutting release tags.
     "aerobeat-environment-core": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-environment-core.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-environment-core",
+      "subfolder": "/",
+      "source": "symlink"
     },
-    // Generic environment loader/orchestrator package for png/ogv/glb plus the
-    // workout-YAML translation lane used by the assembly test scene.
     "aerobeat-environment-loader": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-environment-loader.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-environment-loader",
+      "subfolder": "/",
+      "source": "symlink"
     },
-    // Shared image stack required by the environment loader's refactored PNG path.
     "aerobeat-tool-image-loader": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-tool-image-loader.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-tool-image-loader",
+      "subfolder": "/",
+      "source": "symlink"
     },
     "aerobeat-vendor-godot-image": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-godot-image.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-vendor-godot-image",
+      "subfolder": "/",
+      "source": "symlink"
     },
-    // Shared GLTF stack required by the environment loader's refactored GLB path.
     "aerobeat-tool-gltf-loader": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-tool-gltf-loader.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-tool-gltf-loader",
+      "subfolder": "/",
+      "source": "symlink"
     },
     "aerobeat-vendor-godot-gltf": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-godot-gltf.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-vendor-godot-gltf",
+      "subfolder": "/",
+      "source": "symlink"
     },
-    // Shared video stack required by the environment loader's refactored OGV path.
-    // Keep these mounted explicitly in assembly because GodotEnv consumer manifests
-    // are resolved per project rather than as an implicit transitive addon install.
     "aerobeat-tool-core": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-tool-core.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-tool-core",
+      "subfolder": "/",
+      "source": "symlink"
     },
     "aerobeat-tool-video-player": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-tool-video-player.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-tool-video-player",
+      "subfolder": "/",
+      "source": "symlink"
     },
     "aerobeat-vendor-godot-video": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-godot-video.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-vendor-godot-video",
+      "subfolder": "/",
+      "source": "symlink"
     },
-    // AeroBeat-facing gaussian-splat wrapper package. The repo now ships the
-    // public manager and contract fulfillment surface directly from the tool
-    // repo root, so the assembly mounts only the canonical addon package.
     "aerobeat-tool-gaussian-splat-loader": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-tool-gaussian-splat-loader.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-tool-gaussian-splat-loader",
+      "subfolder": "/",
+      "source": "symlink"
     },
-    // Pinned vendor payload required by the gaussian-splat runtime.
     "aerobeat-vendor-gdgs": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-vendor-gdgs.git",
-      "checkout": "main",
-      "subfolder": "/"
+      "url": "../aerobeat-vendor-gdgs",
+      "subfolder": "/",
+      "source": "symlink"
     },
-    // Install only the upstream Godot addon subtree so the project receives
-    // res://addons/openclaw/ instead of the repo root helper/tooling folders.
     "openclaw": {
       "url": "git@github.com:TomLeeLive/openclaw-godot-plugin.git",
       "checkout": "main",
       "subfolder": "/addons/openclaw"
     },
-    // GUT remains a repo-local validation dependency for the root assembly project.
     "gut": {
       "url": "git@github.com:bitwes/Gut.git",
       "checkout": "main",
