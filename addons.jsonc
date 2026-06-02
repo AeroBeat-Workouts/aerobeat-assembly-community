@@ -62,7 +62,7 @@
       "source": "symlink"
     },
     "aerobeat-vendor-gdgs": {
-      "url": "../aerobeat-vendor-gdgs",
+      "url": "../aerobeat-vendor-gdgs/src",
       "subfolder": "/",
       "source": "symlink"
     },
