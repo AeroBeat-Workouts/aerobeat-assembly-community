@@ -14,7 +14,7 @@
     // stable while sourcing the renamed repo.
     "aerobeat-input-mediapipe": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-camera-tracking.git",
-      "checkout": "5bbdf2575c31eab03ea528f4826c1d159f47a1fe",
+      "checkout": "4f63ccd2d131d4192e9675fd6a78572780a7ec0f",
       "subfolder": "/"
     },
     // Shared environment contract package used by both the generic loader lane
