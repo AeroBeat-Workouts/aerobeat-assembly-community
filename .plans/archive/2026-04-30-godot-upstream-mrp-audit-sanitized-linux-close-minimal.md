@@ -1,6 +1,7 @@
 # Sanitized Linux close MRP audit
 
 **Date:** 2026-04-30  
+**Status:** Stale
 **Bead:** `oc-1n7`  
 **Auditor:** OpenClaw subagent (`auditor` role)
 

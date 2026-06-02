@@ -1,6 +1,7 @@
 # Rebuilt artifact fallout recovery/session reset notes
 
 **Date:** 2026-04-30  
+**Status:** Stale
 **Bead:** `oc-21x`  
 **Artifact:** `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/build/godot-close-path-minimal-qa-rebuild-20260430-1048/`
 

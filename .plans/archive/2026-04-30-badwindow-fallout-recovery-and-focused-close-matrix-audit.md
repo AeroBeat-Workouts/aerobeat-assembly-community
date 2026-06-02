@@ -1,6 +1,7 @@
 # Audit — recovery procedure and focused close-route matrix
 
 **Date:** 2026-04-30  
+**Status:** Stale
 **Bead:** `oc-0z0`  
 **Plan:** `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/.plans/2026-04-30-badwindow-fallout-recovery-and-focused-close-matrix.md`
 

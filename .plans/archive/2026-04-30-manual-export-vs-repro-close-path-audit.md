@@ -1,6 +1,7 @@
 # Audit — manual export discrepancy vs upstream draft
 
 **Date:** 2026-04-30  
+**Status:** Stale
 **Auditor bead:** `oc-4zh`  
 **Plan reviewed:** `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/.plans/2026-04-30-manual-export-vs-repro-close-path-diff.md`  
 **Upstream draft reviewed:** `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/.plans/2026-04-30-godot-upstream-issue-review-draft-linux-close-x11-xwayland.md`

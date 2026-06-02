@@ -1,7 +1,7 @@
 # AeroBeat Assembly Community
 
 **Date:** 2026-04-29  
-**Status:** In Progress  
+**Status:** Stale  
 **Agent:** Pico 🐱‍🏍
 
 ---

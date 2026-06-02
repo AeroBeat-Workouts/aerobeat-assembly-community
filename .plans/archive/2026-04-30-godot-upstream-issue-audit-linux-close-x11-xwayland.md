@@ -1,6 +1,7 @@
 # Audit — review-only Godot upstream issue draft (Linux close X11/Xwayland)
 
 **Date:** 2026-04-30  
+**Status:** Stale
 **Auditor bead:** `oc-8e8`  
 **Draft reviewed:** `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/.plans/2026-04-30-godot-upstream-issue-review-draft-linux-close-x11-xwayland.md`
 

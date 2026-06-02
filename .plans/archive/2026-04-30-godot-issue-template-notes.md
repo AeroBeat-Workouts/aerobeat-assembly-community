@@ -1,6 +1,7 @@
 # Godot bug issue template + reporting guidance notes
 
 **Date:** 2026-04-30  
+**Status:** Stale
 **Scope:** Internal research only for review-ready upstream draft  
 **Repo:** `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community`
 

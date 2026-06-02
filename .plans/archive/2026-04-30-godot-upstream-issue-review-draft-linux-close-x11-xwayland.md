@@ -1,4 +1,5 @@
 # Review-only upstream issue draft
+**Status:** Stale
 
 **Title:** Linux exported app hangs on close with repeated `BadWindow` on the X11/Xwayland path, but closes cleanly on native Wayland
 

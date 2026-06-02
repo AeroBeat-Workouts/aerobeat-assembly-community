@@ -1,7 +1,7 @@
 # AeroBeat Assembly Repo Hygiene Before Fresh Build Session
 
 **Date:** 2026-04-27
-**Status:** Draft
+**Status:** Stale
 **Agent:** Pico 🐱‍🏍
 
 ---

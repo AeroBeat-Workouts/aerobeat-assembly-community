@@ -1,6 +1,7 @@
 # QA Rebuild Notes — Linux Close Minimal Artifact
 
 **Date:** 2026-04-30 10:47 EDT  
+**Status:** Stale
 **Bead:** `oc-k52`  
 **Source project:** `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/repros/linux-close-minimal/`
 

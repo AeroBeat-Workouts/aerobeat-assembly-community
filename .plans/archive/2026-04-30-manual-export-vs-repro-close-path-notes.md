@@ -1,6 +1,7 @@
 # Manual export vs earlier known-bad Linux close-path repro export
 
 **Date:** 2026-04-30  
+**Status:** Stale
 **Bead:** `oc-mcg`
 
 ## Compared artifacts

@@ -1,7 +1,7 @@
 # AeroBeat Assembly Editor-Open Errors: MediaPipe Plugin and Font Path
 
 **Date:** 2026-04-24  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Pico 🐱‍🏍
 
 ---

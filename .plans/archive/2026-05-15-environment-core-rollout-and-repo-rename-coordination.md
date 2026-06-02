@@ -1,7 +1,7 @@
 # AeroBeat Environment Core Rollout and Repo Rename Coordination
 
 **Date:** 2026-05-15  
-**Status:** In Progress  
+**Status:** Stale  
 **Agent:** Cookie 🍪
 
 ---

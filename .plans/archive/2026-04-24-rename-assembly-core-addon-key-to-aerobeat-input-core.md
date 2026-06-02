@@ -1,7 +1,7 @@
 # AeroBeat Assembly Rename Core Addon Key to aerobeat-input-core
 
 **Date:** 2026-04-24  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Pico 🐱‍🏍
 
 ---

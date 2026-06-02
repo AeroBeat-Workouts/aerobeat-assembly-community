@@ -1,7 +1,7 @@
 # AeroBeat Assembly OpenClaw Godot Plugin GodotEnv Integration
 
 **Date:** 2026-04-27  
-**Status:** In Progress  
+**Status:** Stale  
 **Agent:** Pico 🐱‍🏍
 
 ---

@@ -1,6 +1,7 @@
 # Stop note — hold the narrowed Godot upstream draft
 
 **Date:** 2026-04-30
+**Status:** Stale
 
 We stopped before filing the narrowed Godot draft upstream.
 

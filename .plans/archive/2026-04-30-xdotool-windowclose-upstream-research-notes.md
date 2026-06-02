@@ -1,6 +1,7 @@
 # Research notes — `xdotool windowclose` / synthetic X11 close semantics vs Godot findings
 
 **Date:** 2026-04-30  
+**Status:** Stale
 **Bead:** `oc-xl5`  
 **Plan:** `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/.plans/2026-04-30-xdotool-windowclose-research-and-draft-reframe.md`
 

@@ -1,6 +1,7 @@
 # Audit — rebuilt artifact identity vs desktop-control close result
 
 **Date:** 2026-04-30  
+**Status:** Stale
 **Auditor bead:** `oc-3hy`  
 **Plan reviewed:** `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-assembly-community/.plans/2026-04-30-qa-rebuild-and-desktop-control-close-test.md`
 

@@ -1,7 +1,7 @@
 # AeroBeat Assembly GodotEnv Addon Tree Out-of-Sync
 
 **Date:** 2026-04-24  
-**Status:** In Progress  
+**Status:** Stale  
 **Agent:** Pico 🐱‍🏍
 
 ---
