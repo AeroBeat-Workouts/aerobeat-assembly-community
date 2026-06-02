@@ -4,7 +4,7 @@
     30	
     31	[editor_plugins]
     32	
-    33	enabled=PackedStringArray("res://addons/aerobeat-core/plugin.cfg", "res://addons/gut/plugin.cfg")
+    33	enabled=PackedStringArray("res://addons/aerobeat-core/plugin.cfg", "res://addons/aerobeat-vendor-godot-unit-test/plugin.cfg")
     34	
     35	[input]
     36	
@@ -198,16 +198,16 @@ import_status=0
 === editor plugin/init evidence ===
 34:[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
 35:Loading resource: res://addons/aerobeat-core/plugin.gd
-36:Loading resource: res://addons/gut/gut_plugin.gd
+36:Loading resource: res://addons/aerobeat-vendor-godot-unit-test/gut_plugin.gd
 119:Unloading addon: res://addons/aerobeat-core/plugin.cfg
-120:Unloading addon: res://addons/gut/plugin.cfg
+120:Unloading addon: res://addons/aerobeat-vendor-godot-unit-test/plugin.cfg
 121:WARNING: Scan thread aborted...
 128:WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
 \n=== import evidence ===
 34:[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
 35:Loading resource: res://addons/aerobeat-core/plugin.gd
-36:Loading resource: res://addons/gut/gut_plugin.gd
+36:Loading resource: res://addons/aerobeat-vendor-godot-unit-test/gut_plugin.gd
 126:[  66% ] [90m[1mloading_editor_layout[22m | Loading plugin window layout...[39m[0m
 130:Unloading addon: res://addons/aerobeat-core/plugin.cfg
-131:Unloading addon: res://addons/gut/plugin.cfg
+131:Unloading addon: res://addons/aerobeat-vendor-godot-unit-test/plugin.cfg
 137:WARNING: ObjectDB instances leaked at exit (run with --verbose for details).

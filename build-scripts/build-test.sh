@@ -16,7 +16,7 @@ echo "Importing root project..."
 godot --headless --path . --import
 
 echo "Running root GUT suite..."
-godot --headless --path . --script addons/gut/gut_cmdln.gd \
+godot --headless --path . --script addons/aerobeat-vendor-godot-unit-test/gut_cmdln.gd \
   -gdir=res://tests \
   -ginclude_subdirs \
   -gexit

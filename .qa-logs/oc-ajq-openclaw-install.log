@@ -11,7 +11,7 @@ Discovered "openclaw."
   Resolved: Addon "openclaw" from `addons.jsonc` at `addons/openclaw/` on branch `main` of `git@github.com:TomLeeLive/openclaw-godot-plugin.git`
 Discovered "gut."
 
-  Resolved: Addon "gut" from `addons.jsonc` at `addons/gut/` on branch `main` of `git@github.com:bitwes/Gut.git`
+  Resolved: Addon "aerobeat-vendor-godot-unit-test" from `addons.jsonc` at `addons/gut/` on branch `main` of `git@github.com:bitwes/Gut.git`
 ✅ Addons installed successfully.
 === installed openclaw tree ===
 addons/openclaw/connection_manager.gd

@@ -23,7 +23,7 @@ This assembly should be read against the locked `aerobeat-docs` v1 scope:
   - `aerobeat-input-core` pinned at `v0.1.2`, installed at addon key/path `aerobeat-input-core`
   - `aerobeat-input-mediapipe-python`, installed through the compatibility addon directory key `aerobeat-input-mediapipe`
   - `openclaw` installed from the upstream Godot addon subtree for local tooling/runtime integration
-  - `gut` for repo-local validation
+  - `aerobeat-vendor-godot-unit-test` for repo-local validation
 
 ## Runtime truth
 
@@ -83,7 +83,7 @@ godot --headless --path . --import
 From the repo root:
 
 ```bash
-godot --headless --path . --script addons/gut/gut_cmdln.gd \
+godot --headless --path . --script addons/aerobeat-vendor-godot-unit-test/gut_cmdln.gd \
   -gdir=res://tests \
   -ginclude_subdirs \
   -gexit
