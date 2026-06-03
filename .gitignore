@@ -44,3 +44,5 @@ addons/*
 .claude/
 CLAUDE.md
 AGENTS.md
+
+.headless/
